@@ -1,6 +1,8 @@
 import cors from "cors";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import express from "express";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   contactInsert,
   contactsNewestFirst,
@@ -15,7 +17,9 @@ import {
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
-const host = process.env.HOST || "127.0.0.1";
+const host = process.env.HOST || "0.0.0.0";
+const currentDirectory = dirname(fileURLToPath(import.meta.url));
+const distDirectory = resolve(currentDirectory, "../dist");
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -301,8 +305,13 @@ app.delete("/api/admin/purchases/:id", requireAdmin, (request, response, next) =
   deleteAdminRecord(request, response, next, deletePurchase)
 );
 
-app.use((_request, response) => {
+app.use("/api", (_request, response) => {
   response.status(404).json({ success: false, error: "API endpoint not found." });
+});
+
+app.use(express.static(distDirectory));
+app.get(/.*/, (_request, response) => {
+  response.sendFile(resolve(distDirectory, "index.html"));
 });
 
 app.use((error, _request, response, _next) => {
