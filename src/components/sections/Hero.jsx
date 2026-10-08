@@ -69,7 +69,7 @@ function Hero() {
 
           <motion.div className="hero-actions" variants={fadeUp}>
 
-            <Link to="/contact" className="hero-main-button">
+            <Link to="/pricing" className="hero-main-button">
               Get Started
               <ArrowUpRight size={18} />
             </Link>

@@ -33,3 +33,15 @@ export function postApiRequest(path, data) {
     body: JSON.stringify(data),
   });
 }
+
+export function patchApiRequest(path, data) {
+  return requestApi(path, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteApiRequest(path) {
+  return requestApi(path, { method: "DELETE" });
+}

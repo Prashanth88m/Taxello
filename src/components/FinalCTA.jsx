@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import "./sections/Footer.css";
 import ctaWorkspace from "../assets/images/cta-financial-workspace.webp";
+import { fadeUp, revealViewport } from "../motionPresets";
 
 export default function FinalCTA() {
   return <section className="home-final-cta">
@@ -23,8 +24,8 @@ export default function FinalCTA() {
         transition={{ duration: 0.7, ease: "easeOut" }}
       />
       <div className="home-final-cta-overlay" aria-hidden="true" />
-      <div><span>READY WHEN YOU ARE</span><h2>Let's make tax<br /><strong>simpler.</strong></h2><p>Get started with Taxello and take the complexity out of your tax and accounting tasks.</p></div>
-      <Link to="/contact" className="home-cta-button">Get Started <ArrowUpRight size={18} /></Link>
+      <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={revealViewport}><span>READY WHEN YOU ARE</span><h2>Let's make tax<br /><strong>simpler.</strong></h2><p>Get started with TAXELLO and take the complexity out of your tax and accounting tasks.</p></motion.div>
+      <motion.div className="home-cta-link-wrap" variants={fadeUp} initial="hidden" whileInView="visible" viewport={revealViewport} custom={.12}><Link to="/pricing" className="home-cta-button">Get Started <ArrowUpRight size={18} /></Link></motion.div>
     </div>
   </section>;
 }

@@ -306,6 +306,8 @@
 
   font-size: 0.86rem;
   font-weight: 750;
+  font-family: inherit;
+  cursor: pointer;
 
   transition:
     transform 0.25s ease,

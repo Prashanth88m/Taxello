@@ -1,13 +1,13 @@
 import { useRef, useState } from "react";
 
 const phoneCountries = [
-  { id: "IN", name: "India", callingCode: "+91", min: 10, max: 10, pattern: /^[6-9]\d{9}$/, example: "9988776655" },
-  { id: "US", name: "United States", callingCode: "+1", min: 10, max: 10, pattern: /^[2-9]\d{9}$/, example: "2025550123" },
-  { id: "GB", name: "United Kingdom", callingCode: "+44", min: 9, max: 10, pattern: /^[1-9]\d{8,9}$/, example: "7700900123" },
-  { id: "CA", name: "Canada", callingCode: "+1", min: 10, max: 10, pattern: /^[2-9]\d{9}$/, example: "4165550123" },
-  { id: "AU", name: "Australia", callingCode: "+61", min: 9, max: 9, pattern: /^[2-9]\d{8}$/, example: "412345678" },
-  { id: "SG", name: "Singapore", callingCode: "+65", min: 8, max: 8, pattern: /^[3689]\d{7}$/, example: "81234567" },
-  { id: "AE", name: "UAE", callingCode: "+971", min: 9, max: 9, pattern: /^[2-9]\d{8}$/, example: "501234567" },
+  { id: "IN", name: "India", callingCode: "+91", min: 10, max: 10, pattern: /^[6-9]\d{9}$/ },
+  { id: "US", name: "United States", callingCode: "+1", min: 10, max: 10, pattern: /^[2-9]\d{9}$/ },
+  { id: "GB", name: "United Kingdom", callingCode: "+44", min: 9, max: 10, pattern: /^[1-9]\d{8,9}$/ },
+  { id: "CA", name: "Canada", callingCode: "+1", min: 10, max: 10, pattern: /^[2-9]\d{9}$/ },
+  { id: "AU", name: "Australia", callingCode: "+61", min: 9, max: 9, pattern: /^[2-9]\d{8}$/ },
+  { id: "SG", name: "Singapore", callingCode: "+65", min: 8, max: 8, pattern: /^[3689]\d{7}$/ },
+  { id: "AE", name: "UAE", callingCode: "+971", min: 9, max: 9, pattern: /^[2-9]\d{8}$/ },
 ];
 
 function getPhoneError(countryId, nationalNumber) {
@@ -29,17 +29,16 @@ function getPhoneError(countryId, nationalNumber) {
 export default function PhoneInput({ required = false, resetKey = 0 }) {
   const [countryId, setCountryId] = useState("IN");
   const [nationalNumber, setNationalNumber] = useState("");
-  const [touched, setTouched] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const inputRef = useRef(null);
   const country = phoneCountries.find((item) => item.id === countryId);
   const phoneValue = nationalNumber ? `${country.callingCode} ${nationalNumber}` : "";
-  const visibleMessage = validationMessage || (required && touched && !nationalNumber ? "Phone number is required." : "");
+  const visibleMessage = validationMessage;
   const inputId = `phone-national-${resetKey}`;
   const messageId = `${inputId}-message`;
 
   function updateNumber(event) {
-    const digits = event.target.value.replace(/\D/g, "");
+    const digits = event.target.value.replace(/\D/g, "").slice(0, country.max);
     const error = getPhoneError(countryId, digits);
     event.target.setCustomValidity(error);
     setNationalNumber(digits);
@@ -48,17 +47,13 @@ export default function PhoneInput({ required = false, resetKey = 0 }) {
 
   function updateCountry(event) {
     const nextCountryId = event.target.value;
-    const error = getPhoneError(nextCountryId, nationalNumber);
-    inputRef.current?.setCustomValidity(error);
+    const nextCountry = phoneCountries.find((item) => item.id === nextCountryId);
+    const nextNumber = nationalNumber.slice(0, nextCountry.max);
+    const error = getPhoneError(nextCountryId, nextNumber);
+    inputRef.current?.setCustomValidity(error || (required && !nextNumber ? "Phone number is required." : ""));
     setCountryId(nextCountryId);
+    setNationalNumber(nextNumber);
     setValidationMessage(error);
-  }
-
-  function handleBlur() {
-    setTouched(true);
-    if (required && !nationalNumber) {
-      inputRef.current?.setCustomValidity("Phone number is required.");
-    }
   }
 
   return <div className="phone-input-container">
@@ -74,17 +69,15 @@ export default function PhoneInput({ required = false, resetKey = 0 }) {
         autoComplete="tel-national"
         aria-label="National phone number"
         aria-invalid={Boolean(visibleMessage)}
-        aria-describedby={messageId}
+        aria-describedby={visibleMessage ? messageId : undefined}
         required={required}
         value={nationalNumber}
-        placeholder={country.example}
+        placeholder={country.id === "IN" ? "Enter 10 digit mobile number" : `Enter ${country.min}${country.max !== country.min ? `-${country.max}` : ""} digit phone number`}
+        maxLength={country.max}
         onChange={updateNumber}
-        onBlur={handleBlur}
       />
       <input type="hidden" name="phone" value={phoneValue} />
     </div>
-    <small id={messageId} className={visibleMessage ? "phone-input-error" : "phone-input-hint"} aria-live="polite">
-      {visibleMessage || `Enter ${country.min === country.max ? country.min : `${country.min}-${country.max}`} digits.`}
-    </small>
+    {visibleMessage && <small id={messageId} className="phone-input-error" aria-live="polite">{visibleMessage}</small>}
   </div>;
 }

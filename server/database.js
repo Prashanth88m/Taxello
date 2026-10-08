@@ -29,6 +29,13 @@ database.exec(`
   );
 `);
 
+for (const table of ["contacts", "purchases"]) {
+  const columns = database.prepare(`PRAGMA table_info(${table})`).all();
+  if (!columns.some((column) => column.name === "admin_note")) {
+    database.exec(`ALTER TABLE ${table} ADD COLUMN admin_note TEXT`);
+  }
+}
+
 export const contactInsert = database.prepare(`
   INSERT INTO contacts (name, email, phone, service, message)
   VALUES (?, ?, ?, ?, ?)
@@ -46,3 +53,12 @@ export const contactsNewestFirst = database.prepare(
 export const purchasesNewestFirst = database.prepare(
   "SELECT * FROM purchases ORDER BY created_at DESC, id DESC"
 );
+
+export const updateContactAdminFields = database.prepare(
+  "UPDATE contacts SET status = ?, admin_note = ? WHERE id = ?"
+);
+export const updatePurchaseAdminFields = database.prepare(
+  "UPDATE purchases SET status = ?, admin_note = ? WHERE id = ?"
+);
+export const deleteContact = database.prepare("DELETE FROM contacts WHERE id = ?");
+export const deletePurchase = database.prepare("DELETE FROM purchases WHERE id = ?");

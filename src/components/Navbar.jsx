@@ -30,7 +30,7 @@ function Navbar() {
           <NavLink to="/contact">Contact</NavLink>
         </div>
 
-        <Link to="/contact" className="desktop-nav-cta">Get Started <ArrowRight size={16} /></Link>
+        <Link to="/pricing" className="desktop-nav-cta">Get Started <ArrowRight size={16} /></Link>
 
         <button className="mobile-menu-button" type="button" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? <X size={21} /> : <Menu size={21} />}

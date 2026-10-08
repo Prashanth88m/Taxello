@@ -136,7 +136,7 @@ function Calculator() {
           <p>
             {country === "IN"
               ? "Enter a few basic details to get an illustrative estimate using the India new-regime profile."
-              : "Currency updates for your selected country. A country-specific tax calculation is not configured for this demo."}
+              : "Currency updates for your selected country. A country-specific tax calculation is not configured for the selected country."}
           </p>
         </motion.div>
 
@@ -228,7 +228,7 @@ function Calculator() {
         </motion.div>
 
         <p className="calculator-disclaimer">
-          This calculator provides an illustrative estimate for website demonstration purposes only. It is not tax advice and does not account for every exemption, deduction, special-rate income, surcharge, marginal relief or individual tax circumstance. Tax rules vary by country and tax year; country-specific estimates are not configured outside India.
+          This calculator provides an illustrative estimate only. It is not tax advice and does not account for every exemption, deduction, special-rate income, surcharge, marginal relief or individual tax circumstance. Tax rules vary by country and tax year; country-specific estimates are not configured outside India.
         </p>
       </div>
     </section>

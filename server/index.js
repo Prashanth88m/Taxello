@@ -5,8 +5,12 @@ import {
   contactInsert,
   contactsNewestFirst,
   database,
+  deleteContact,
+  deletePurchase,
   purchaseInsert,
   purchasesNewestFirst,
+  updateContactAdminFields,
+  updatePurchaseAdminFields,
 } from "./database.js";
 
 const app = express();
@@ -162,8 +166,8 @@ app.post("/api/contact", (request, response, next) => {
       message: readText(request.body, "message", 5000),
     };
 
-    if (!contact.name || !contact.email || !contact.service || !contact.message) {
-      return validationError(response, "Name, email, service and message are required.");
+    if (!contact.name || !contact.email || !contact.service) {
+      return validationError(response, "Name, email and service are required.");
     }
     if (!isValidEmail(contact.email)) {
       return validationError(response, "Enter a valid email address.");
@@ -179,7 +183,7 @@ app.post("/api/contact", (request, response, next) => {
       contact.email,
       normalizedPhone,
       contact.service,
-      contact.message
+      contact.message || null
     );
 
     return response.status(201).json({
@@ -250,6 +254,52 @@ app.get("/api/admin/purchases", requireAdmin, (_request, response, next) => {
     return next(error);
   }
 });
+
+const adminStatuses = {
+  contacts: new Set(["new", "contacted", "in_progress", "resolved"]),
+  purchases: new Set(["pending", "contacted", "in_progress", "completed", "cancelled"]),
+};
+
+function updateAdminRecord(request, response, next, { table, updater, statuses }) {
+  try {
+    const id = Number(request.params.id);
+    const status = readText(request.body, "status", 30);
+    const adminNote = readText(request.body, "adminNote", 2000);
+    if (!Number.isSafeInteger(id) || id < 1) return validationError(response, "Enter a valid record ID.");
+    if (!statuses.has(status)) return validationError(response, "Select a valid status.");
+    const result = updater.run(status, adminNote || null, id);
+    if (!result.changes) return response.status(404).json({ success: false, error: "Record not found." });
+    const record = database.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id);
+    return response.json({ success: true, record });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+function deleteAdminRecord(request, response, next, statement) {
+  try {
+    const id = Number(request.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) return validationError(response, "Enter a valid record ID.");
+    const result = statement.run(id);
+    if (!result.changes) return response.status(404).json({ success: false, error: "Record not found." });
+    return response.json({ success: true, message: "Record deleted." });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+app.patch("/api/admin/contacts/:id", requireAdmin, (request, response, next) =>
+  updateAdminRecord(request, response, next, { table: "contacts", updater: updateContactAdminFields, statuses: adminStatuses.contacts })
+);
+app.patch("/api/admin/purchases/:id", requireAdmin, (request, response, next) =>
+  updateAdminRecord(request, response, next, { table: "purchases", updater: updatePurchaseAdminFields, statuses: adminStatuses.purchases })
+);
+app.delete("/api/admin/contacts/:id", requireAdmin, (request, response, next) =>
+  deleteAdminRecord(request, response, next, deleteContact)
+);
+app.delete("/api/admin/purchases/:id", requireAdmin, (request, response, next) =>
+  deleteAdminRecord(request, response, next, deletePurchase)
+);
 
 app.use((_request, response) => {
   response.status(404).json({ success: false, error: "API endpoint not found." });

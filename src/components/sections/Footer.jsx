@@ -1,4 +1,3 @@
-import { Mail, Phone } from "lucide-react";
 import "./Footer.css";
 import { Link } from "react-router-dom";
 
@@ -38,17 +37,9 @@ function Footer() {
             </div>
 
             <div>
-              <h4>Demo contact details</h4>
-
-              <a href="mailto:hello@taxello.example">
-                <Mail size={15} />
-                hello@taxello.example <span className="demo-note">demo</span>
-              </a>
-
-              <a href="tel:+910000000000">
-                <Phone size={15} />
-                +91 00000 00000 <span className="demo-note">demo</span>
-              </a>
+              <h4>Contact TAXELLO</h4>
+              <p className="footer-contact-copy">Reach out through our enquiry form.</p>
+              <Link to="/contact">Send an enquiry</Link>
             </div>
           </div>
 
@@ -56,11 +47,11 @@ function Footer() {
 
         <div className="footer-bottom">
           <span>
-            © 2026 Taxello. Project website.
+            © 2026 TAXELLO. Tax and accounting support.
           </span>
 
           <span>
-            Built with React
+            Clear information. Practical next steps.
           </span>
         </div>
       </footer>
