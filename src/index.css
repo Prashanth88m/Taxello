@@ -1,0 +1,182 @@
+/* ================================
+   TAXELLO - GLOBAL THEME
+   ================================ */
+
+:root {
+  --taxello-bg: #08091d;
+  --taxello-glass: rgba(255, 255, 255, 0.055);
+  --taxello-border: rgba(255, 255, 255, 0.13);
+  --taxello-lavender: #a99cff;
+  --taxello-purple: #7958e8;
+  --taxello-soft-purple: #c8bfff;
+  --taxello-coral: #ff9c88;
+  --taxello-white: #f7f7ff;
+  --taxello-muted: #9292aa;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+
+  background: var(--taxello-bg);
+  color: #f4f6f8;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+@media (max-width: 960px) {
+  .app-main {
+    padding-bottom: 82px;
+  }
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+::selection {
+  background: rgba(169, 156, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Shared interaction polish */
+:root {
+  color-scheme: dark;
+  --taxello-glass-strong: rgba(255, 255, 255, 0.075);
+  --taxello-glass-line: rgba(205, 195, 255, 0.16);
+  --taxello-glass-shadow: 0 18px 48px rgba(0, 0, 0, 0.24), inset 0 1px rgba(255, 255, 255, 0.07);
+}
+
+.service-card,
+.pricing-card,
+.about-card,
+.about-preview-points article,
+.testimonial-card,
+.admin-cards article {
+  transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover,
+.pricing-card:hover,
+.about-card:hover,
+.about-preview-points article:hover,
+.testimonial-card:hover,
+.admin-cards article:hover {
+  transform: translateY(-5px);
+  border-color: rgba(190, 177, 255, 0.28);
+  background-color: rgba(255, 255, 255, 0.055);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.27), inset 0 1px rgba(255, 255, 255, 0.09);
+}
+
+.hero-main-button,
+.hero-outline-button,
+.pricing-button,
+.calculator-cta,
+.form-submit,
+.page-primary-link,
+.home-cta-button,
+.desktop-nav-cta,
+.section-more-link {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.hero-main-button:hover,
+.hero-outline-button:hover,
+.pricing-button:hover,
+.calculator-cta:hover,
+.form-submit:hover,
+.page-primary-link:hover,
+.home-cta-button:hover,
+.section-more-link:hover {
+  transform: translateY(-2px);
+}
+
+.hero-main-button:hover svg,
+.hero-outline-button:hover svg,
+.pricing-button:hover svg,
+.calculator-cta:hover svg,
+.home-cta-button:hover svg,
+.desktop-nav-cta:hover svg,
+.section-more-link:hover svg,
+.service-card:hover .service-arrow svg {
+  transform: translate(2px, -1px);
+}
+
+.hero-main-button svg,
+.hero-outline-button svg,
+.pricing-button svg,
+.calculator-cta svg,
+.home-cta-button svg,
+.desktop-nav-cta svg,
+.section-more-link svg,
+.service-arrow svg {
+  transition: transform 0.25s ease;
+}
+
+.hero-main-button:active,
+.hero-outline-button:active,
+.pricing-button:active,
+.calculator-cta:active,
+.form-submit:active,
+.page-primary-link:active,
+.home-cta-button:active {
+  transform: translateY(0);
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--taxello-lavender);
+  outline-offset: 3px;
+}
+
+h1, h2, h3, h4 { text-wrap: pretty; }
+p { text-wrap: pretty; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080c14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #273242;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--taxello-lavender);
+}

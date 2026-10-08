@@ -1,0 +1,30 @@
+import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import "./sections/Footer.css";
+import ctaWorkspace from "../assets/images/cta-financial-workspace.webp";
+
+export default function FinalCTA() {
+  return <section className="home-final-cta">
+    <div className="home-final-cta-inner">
+      <motion.img
+        className="home-final-cta-image"
+        src={ctaWorkspace}
+        alt=""
+        aria-hidden="true"
+        width="1600"
+        height="600"
+        loading="lazy"
+        decoding="async"
+        sizes="(max-width: 800px) 100vw, 1100px"
+        initial={{ opacity: 0, scale: 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      />
+      <div className="home-final-cta-overlay" aria-hidden="true" />
+      <div><span>READY WHEN YOU ARE</span><h2>Let's make tax<br /><strong>simpler.</strong></h2><p>Get started with Taxello and take the complexity out of your tax and accounting tasks.</p></div>
+      <Link to="/contact" className="home-cta-button">Get Started <ArrowUpRight size={18} /></Link>
+    </div>
+  </section>;
+}

@@ -1,0 +1,412 @@
+/* =========================================
+   TAXELLO — SERVICES
+   ========================================= */
+
+.taxello-services {
+  position: relative;
+  overflow: hidden;
+
+  padding: 150px 0;
+
+  background:
+    radial-gradient(
+      circle at 15% 25%,
+      rgba(82, 72, 220, 0.12),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 70%,
+      rgba(211, 89, 106, 0.08),
+      transparent 32%
+    ),
+    #08091d;
+}
+
+.services-container {
+  width: min(1160px, 90%);
+  margin: 0 auto;
+
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================
+   BACKGROUND ORBS
+   ========================================= */
+
+.services-orb {
+  position: absolute;
+
+  width: 320px;
+  height: 320px;
+
+  border-radius: 50%;
+
+  filter: blur(110px);
+
+  pointer-events: none;
+}
+
+.services-orb-one {
+  top: 10%;
+  left: -180px;
+
+  background: rgba(87, 72, 224, 0.13);
+}
+
+.services-orb-two {
+  right: -180px;
+  bottom: 5%;
+
+  background: rgba(219, 91, 112, 0.09);
+}
+
+/* =========================================
+   HEADING
+   ========================================= */
+
+.services-heading {
+  max-width: 850px;
+
+  margin: 0 auto 75px;
+
+  text-align: center;
+}
+
+.services-label {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 13px;
+
+  margin-bottom: 22px;
+
+  color: #aaa4c8;
+
+  font-size: 0.68rem;
+
+  font-weight: 700;
+
+  letter-spacing: 2.7px;
+}
+
+.services-label span {
+  width: 30px;
+  height: 1px;
+
+  background: rgba(194, 184, 255, 0.45);
+}
+
+.services-heading h2 {
+  margin: 0;
+
+  color: #f7f7fb;
+
+  font-size: clamp(3rem, 6vw, 5.2rem);
+
+  line-height: 1;
+
+  letter-spacing: -4px;
+
+  font-weight: 750;
+}
+
+.services-heading h2 span {
+  background: linear-gradient(
+    90deg,
+    #b7adff,
+    #d99bc8,
+    #ff856d
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+}
+
+.services-heading p {
+  max-width: 650px;
+
+  margin: 28px auto 0;
+
+  color: #8d91ab;
+
+  font-size: 0.98rem;
+
+  line-height: 1.8;
+}
+
+/* =========================================
+   SERVICES GRID
+   ========================================= */
+
+.services-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 18px;
+}
+
+/* =========================================
+   SERVICE CARD
+   ========================================= */
+
+.service-card {
+  position: relative;
+
+  min-height: 285px;
+
+  padding: 28px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  overflow: hidden;
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.025)
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 25px 70px rgba(0, 0, 0, 0.17);
+
+  transition:
+    transform 0.35s ease,
+    border-color 0.35s ease,
+    background 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+/* subtle light reflection */
+
+.service-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 180px;
+  height: 180px;
+
+  top: -100px;
+  right: -70px;
+
+  border-radius: 50%;
+
+  background: rgba(167, 151, 255, 0.08);
+
+  filter: blur(25px);
+
+  transition: 0.4s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-7px);
+
+  border-color: rgba(171, 155, 255, 0.27);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.10),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 35px 80px rgba(0, 0, 0, 0.28);
+}
+
+.service-card:hover::before {
+  transform: scale(1.5);
+
+  background: rgba(172, 151, 255, 0.12);
+}
+
+/* =========================================
+   CARD TOP
+   ========================================= */
+
+.service-top {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+.service-number {
+  color: #777b9b;
+
+  font-size: 0.72rem;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+.service-icon {
+  width: 47px;
+  height: 47px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  color: #c5bcff;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(157, 141, 255, 0.15),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  border: 1px solid rgba(186, 173, 255, 0.14);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* =========================================
+   CARD BODY
+   ========================================= */
+
+.service-body {
+  margin-top: 30px;
+}
+
+.service-body h3 {
+  margin: 0;
+
+  color: #f5f5fa;
+
+  font-size: 1.35rem;
+
+  letter-spacing: -0.5px;
+}
+
+.service-body p {
+  max-width: 470px;
+
+  margin: 11px 0 0;
+
+  color: #8589a5;
+
+  font-size: 0.84rem;
+
+  line-height: 1.75;
+}
+
+/* =========================================
+   CARD BOTTOM
+   ========================================= */
+
+.service-bottom {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-top: 25px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.service-bottom > span {
+  color: #8f92ab;
+
+  font-size: 0.72rem;
+
+  font-weight: 600;
+
+  transition: color 0.3s ease;
+}
+
+.service-arrow {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  color: #c6bfff;
+
+  background: rgba(255, 255, 255, 0.045);
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+
+.service-card:hover .service-bottom > span {
+  color: #eeeefa;
+}
+
+.service-card:hover .service-arrow {
+  transform: rotate(45deg);
+
+  background: rgba(165, 148, 255, 0.14);
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 800px) {
+  .taxello-services {
+    padding: 110px 0;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .services-heading {
+    margin-bottom: 50px;
+  }
+}
+
+@media (max-width: 600px) {
+  .services-heading h2 {
+    font-size: clamp(2.2rem, 9.2vw, 3rem);
+
+    letter-spacing: -1.7px;
+    overflow-wrap: anywhere;
+  }
+
+  .service-card {
+    min-height: 265px;
+
+    padding: 23px;
+  }
+}
