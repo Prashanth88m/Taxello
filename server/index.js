@@ -34,7 +34,7 @@ const plans = {
   Business: 2999,
 };
 
-app.use(cors({
+app.use("/api", cors({
   credentials: true,
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) {
