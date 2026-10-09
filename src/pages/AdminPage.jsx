@@ -5,8 +5,8 @@ import { useToast } from "../components/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 import "./PageStyles.css";
 
-const contactStatuses = ["new", "contacted", "in_progress", "resolved"];
-const purchaseStatuses = ["pending", "contacted", "in_progress", "completed", "cancelled"];
+const contactStatuses = ["new", "contacted", "accepted", "in_progress", "completed", "cancelled", "resolved"];
+const purchaseStatuses = ["pending", "contacted", "accepted", "in_progress", "completed", "cancelled"];
 const currencyFormatter = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 const dateFormatter = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" });
 const labelStatus = (status) => status.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -21,6 +21,7 @@ function RecordCard({ record, type, onStatusChange, onSaveNote, onDelete }) {
   const isPurchase = type === "purchase";
   const [note, setNote] = useState(record.admin_note || "");
   const statusOptions = isPurchase ? purchaseStatuses : contactStatuses;
+  const terminalStatus = ["completed", "resolved", "cancelled"].includes(record.status);
   const fields = isPurchase
     ? [["Phone", record.phone || "Not provided"], ["Plan", record.plan], ["Amount", record.amount == null ? "Not available" : currencyFormatter.format(record.amount)], ["Requirements", record.requirements || "None provided"], ["Date", formatDate(record.created_at)]]
     : [["Phone", record.phone || "Not provided"], ["Service", record.service || "Not provided"], ["Message", record.message || "No message"], ["Date", formatDate(record.created_at)]];
@@ -35,6 +36,12 @@ function RecordCard({ record, type, onStatusChange, onSaveNote, onDelete }) {
       <summary>Manage request</summary>
       <div className="admin-record-controls">
         <label>Status<select value={record.status || statusOptions[0]} onChange={(event) => onStatusChange(record, type, event.target.value)}>{statusOptions.map((status) => <option key={status} value={status}>{labelStatus(status)}</option>)}</select></label>
+        <div className="admin-lifecycle-actions" aria-label="Request lifecycle actions">
+          {!terminalStatus && record.status !== "accepted" && <button type="button" onClick={() => onStatusChange(record, type, "accepted")}>Accept request</button>}
+          {!terminalStatus && record.status !== "in_progress" && <button type="button" onClick={() => onStatusChange(record, type, "in_progress")}>Start work</button>}
+          {!terminalStatus && <button type="button" onClick={() => onStatusChange(record, type, "completed")}>Mark completed</button>}
+          {!terminalStatus && <button type="button" className="admin-lifecycle-cancel" onClick={() => onStatusChange(record, type, "cancelled")}>Cancel request</button>}
+        </div>
         <label>Internal note<textarea rows="3" maxLength="2000" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Add a private follow-up note" /></label>
         <div className="admin-record-actions"><button type="button" className="admin-refresh-button" onClick={() => onSaveNote(record, type, note)}>Save note</button><button type="button" className="admin-delete-button" onClick={() => onDelete(record, type)}><Trash2 size={15} /> Delete</button></div>
       </div>
@@ -117,6 +124,46 @@ function AdminDashboard({ onLogout }) {
     setConfirmation(action);
   }
 
+  function requestStatusChange(record, type, status) {
+    const isCancellation = status === "cancelled";
+    const actionLabel = ({
+      accepted: "Accept request",
+      in_progress: "Start work",
+      completed: "Mark completed",
+      cancelled: "Cancel request",
+    })[status] || `Set ${labelStatus(status)}`;
+    const recordLabel = type === "contact" ? "enquiry" : "purchase request";
+
+    confirmAction({
+      kind: "status",
+      record,
+      type,
+      status,
+      title: isCancellation ? "Cancel this request?" : `${actionLabel}?`,
+      message: isCancellation
+        ? `Cancel this ${recordLabel}? You can change its status again later.`
+        : `Save this ${recordLabel} as ${labelStatus(status)}?`,
+      confirmLabel: actionLabel || "Update status",
+      danger: isCancellation,
+    });
+  }
+
+  function replaceRecord(type, record) {
+    const key = type === "contact" ? "contacts" : "purchases";
+    setData((current) => current && ({
+      ...current,
+      [key]: current[key].map((item) => item.id === record.id ? record : item),
+    }));
+  }
+
+  function removeRecord(type, recordId) {
+    const key = type === "contact" ? "contacts" : "purchases";
+    setData((current) => current && ({
+      ...current,
+      [key]: current[key].filter((item) => item.id !== recordId),
+    }));
+  }
+
   async function executeConfirmation() {
     if (!confirmation) return;
     const action = confirmation;
@@ -127,27 +174,29 @@ function AdminDashboard({ onLogout }) {
       if (action.kind === "delete") {
         const plural = action.type === "contact" ? "contacts" : "purchases";
         await deleteApiRequest(`/api/admin/${plural}/${action.record.id}`);
-        await loadAdminData();
+        removeRecord(action.type, action.record.id);
         showToast(action.type === "contact" ? "Enquiry deleted" : "Purchase request deleted", "success");
       }
       if (action.kind === "status") {
         const plural = action.type === "contact" ? "contacts" : "purchases";
-        await patchApiRequest(`/api/admin/${plural}/${action.record.id}`, { status: action.status, adminNote: action.record.admin_note || "" });
-        await loadAdminData();
+        const result = await patchApiRequest(`/api/admin/${plural}/${action.record.id}`, { status: action.status, adminNote: action.record.admin_note || "" });
+        if (!result.record) throw new Error("The updated request was not returned by the server.");
+        replaceRecord(action.type, result.record);
         showToast("Status updated", "success");
       }
+      setConfirmation(null);
     } catch (requestError) {
       showToast(requestError.message || "Something went wrong. Please try again.", "error");
-    } finally {
-      setConfirmation(null);
+      setConfirmation({ ...action, busy: false });
     }
   }
 
   async function saveNote(record, type, adminNote) {
     try {
       const plural = type === "contact" ? "contacts" : "purchases";
-      await patchApiRequest(`/api/admin/${plural}/${record.id}`, { status: record.status, adminNote });
-      await loadAdminData();
+      const result = await patchApiRequest(`/api/admin/${plural}/${record.id}`, { status: record.status, adminNote });
+      if (!result.record) throw new Error("The updated request was not returned by the server.");
+      replaceRecord(type, result.record);
       showToast("Internal note saved", "success");
     } catch (requestError) {
       showToast(requestError.message || "Something went wrong. Please try again.", "error");
@@ -161,8 +210,8 @@ function AdminDashboard({ onLogout }) {
     <div className="admin-cards">{summaries.map(({ label, value, icon: Icon }) => <article key={label}><Icon /><span>{label}</span><strong>{loading ? "--" : value}</strong></article>)}</div>
     {loading && <div className="admin-state" role="status">Loading enquiries and purchase requests...</div>}
     {!loading && error && <div className="admin-state admin-error-state" role="alert"><AlertCircle size={20} /><div><strong>We couldn't load the latest data.</strong><p>{error}</p><p>Check that the TAXELLO backend is running, then refresh this page.</p></div></div>}
-    {!loading && !error && <div className="admin-data-list"><RecordsSection title="Contact enquiries" records={contacts} type="contact" emptyMessage="No contact enquiries yet." onStatusChange={(record, type, status) => confirmAction({ kind: "status", record, type, status, title: "Update enquiry status?", message: `Change this enquiry to ${labelStatus(status)}?`, confirmLabel: "Update" })} onSaveNote={saveNote} onDelete={(record, type) => confirmAction({ kind: "delete", record, type, title: "Delete this enquiry?", message: "Are you sure you want to delete this enquiry? This action cannot be undone.", confirmLabel: "Delete", danger: true })} />
-      <RecordsSection title="Purchase requests" records={purchases} type="purchase" emptyMessage="No purchase requests yet." onStatusChange={(record, type, status) => confirmAction({ kind: "status", record, type, status, title: "Update request status?", message: `Change this purchase request to ${labelStatus(status)}?`, confirmLabel: "Update" })} onSaveNote={saveNote} onDelete={(record, type) => confirmAction({ kind: "delete", record, type, title: "Delete this request?", message: "Are you sure you want to delete this purchase request? This action cannot be undone.", confirmLabel: "Delete", danger: true })} /></div>}
+    {!loading && !error && <div className="admin-data-list"><RecordsSection title="Contact enquiries" records={contacts} type="contact" emptyMessage="No contact enquiries yet." onStatusChange={requestStatusChange} onSaveNote={saveNote} onDelete={(record, type) => confirmAction({ kind: "delete", record, type, title: "Delete this enquiry?", message: "Are you sure you want to delete this enquiry? This action cannot be undone.", confirmLabel: "Delete", danger: true })} />
+      <RecordsSection title="Purchase requests" records={purchases} type="purchase" emptyMessage="No purchase requests yet." onStatusChange={requestStatusChange} onSaveNote={saveNote} onDelete={(record, type) => confirmAction({ kind: "delete", record, type, title: "Delete this request?", message: "Are you sure you want to delete this purchase request? This action cannot be undone.", confirmLabel: "Delete", danger: true })} /></div>}
     <ConfirmDialog open={Boolean(confirmation)} title={confirmation?.title} message={confirmation?.message} confirmLabel={confirmation?.confirmLabel} danger={confirmation?.danger} busy={confirmation?.busy} onCancel={() => setConfirmation(null)} onConfirm={executeConfirmation} />
   </main>;
 }

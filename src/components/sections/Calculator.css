@@ -132,7 +132,7 @@
 
   grid-template-columns: 0.95fr 1.05fr;
 
-  overflow: hidden;
+  overflow: visible;
 
   border-radius: 28px;
 
@@ -293,6 +293,20 @@
 .calculator-field select option {
   background: #111329;
   color: #fff;
+}
+
+.calculator-field select {
+  border-color: rgba(205, 195, 255, .16);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .035));
+  color-scheme: dark;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+
+.calculator-field select:focus-visible {
+  border-color: rgba(169, 156, 255, .6);
+  box-shadow: 0 0 0 3px rgba(169, 156, 255, .12);
 }
 
 .calculator-note {

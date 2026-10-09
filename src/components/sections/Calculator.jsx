@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Calculator as CalculatorIcon, Info } from "lucide-react";
 import { Link } from "react-router-dom";
+import GlassSelect from "../GlassSelect";
 import { fadeUp, revealViewport } from "../../motionPresets";
 import "./Calculator.css";
 
@@ -155,11 +156,13 @@ function Calculator() {
 
             <div className="calculator-field">
               <label htmlFor="calculator-country">Country / currency</label>
-              <select id="calculator-country" value={country} onChange={(event) => setCountry(event.target.value)}>
-                {Object.entries(countryProfiles).map(([code, item]) => (
-                  <option key={code} value={code}>{item.name} ({item.currency})</option>
-                ))}
-              </select>
+              <GlassSelect
+                id="calculator-country"
+                ariaLabel="Country and currency"
+                value={country}
+                onChange={setCountry}
+                options={Object.entries(countryProfiles).map(([code, item]) => ({ value: code, label: `${item.name} (${item.currency})` }))}
+              />
             </div>
 
             <div className="calculator-field">
@@ -179,10 +182,16 @@ function Calculator() {
 
             {country === "IN" && <div className="calculator-field">
               <label htmlFor="employment">Income type</label>
-              <select id="employment" value={employment} onChange={(event) => setEmployment(event.target.value)}>
-                <option value="salary">Salaried individual</option>
-                <option value="business">Business / profession</option>
-              </select>
+              <GlassSelect
+                id="employment"
+                ariaLabel="Income type"
+                value={employment}
+                onChange={setEmployment}
+                options={[
+                  { value: "salary", label: "Salaried individual" },
+                  { value: "business", label: "Business / profession" },
+                ]}
+              />
             </div>}
 
             <div className="calculator-note">

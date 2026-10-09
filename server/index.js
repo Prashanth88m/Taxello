@@ -34,7 +34,7 @@ const plans = {
   Business: 2999,
 };
 
-app.use("/api", cors({
+const crossOriginCors = cors({
   credentials: true,
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) {
@@ -46,7 +46,29 @@ app.use("/api", cors({
     error.status = 403;
     callback(error);
   },
-}));
+});
+
+app.use("/api", (request, response, next) => {
+  const origin = request.get("origin");
+  const requestHost = (request.get("x-forwarded-host") || request.get("host") || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+
+  // Railway serves the frontend and API from one origin. Same-origin fetches
+  // need no CORS headers, so don't run them through the cross-origin allowlist.
+  if (origin && requestHost) {
+    try {
+      if (new URL(origin).host.toLowerCase() === requestHost) {
+        return next();
+      }
+    } catch {
+      // Invalid Origin headers fall through to the explicit allowlist check.
+    }
+  }
+
+  return crossOriginCors(request, response, next);
+});
 app.use(express.json({ limit: "1mb" }));
 
 function readText(body, field, maxLength) {
@@ -260,8 +282,8 @@ app.get("/api/admin/purchases", requireAdmin, (_request, response, next) => {
 });
 
 const adminStatuses = {
-  contacts: new Set(["new", "contacted", "in_progress", "resolved"]),
-  purchases: new Set(["pending", "contacted", "in_progress", "completed", "cancelled"]),
+  contacts: new Set(["new", "contacted", "accepted", "in_progress", "completed", "cancelled", "resolved"]),
+  purchases: new Set(["pending", "contacted", "accepted", "in_progress", "completed", "cancelled"]),
 };
 
 function updateAdminRecord(request, response, next, { table, updater, statuses }) {

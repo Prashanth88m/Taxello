@@ -1,5 +1,8 @@
 import "./Footer.css";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import BrandLogo from "../BrandLogo";
+import { fadeUp, revealViewport } from "../../motionPresets";
 
 function Footer() {
   return (
@@ -7,18 +10,16 @@ function Footer() {
       <footer className="footer">
         <div className="footer-container">
 
-          <div className="footer-brand">
-            <Link to="/" className="footer-logo">
-              TAX<span>ELLO</span>
-            </Link>
+          <motion.div className="footer-brand" variants={fadeUp} initial="hidden" whileInView="visible" viewport={revealViewport}>
+            <BrandLogo size="large" />
 
             <p>
               Tax and accounting, made clear.
             </p>
-          </div>
+          </motion.div>
 
           <div className="footer-links">
-            <div>
+            <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={revealViewport}>
               <h4>Explore</h4>
 
               <Link to="/">Home</Link>
@@ -27,20 +28,20 @@ function Footer() {
               <Link to="/calculator">Calculator</Link>
               <Link to="/pricing">Pricing</Link>
               <Link to="/contact">Contact</Link>
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={revealViewport} custom={.08}>
               <h4>Services</h4>
               <Link to="/services">Individual tax returns</Link>
               <Link to="/services">Business accounting</Link>
               <Link to="/services">Bookkeeping & payroll</Link>
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={revealViewport} custom={.16}>
               <h4>Contact TAXELLO</h4>
               <p className="footer-contact-copy">Reach out through our enquiry form.</p>
               <Link to="/contact">Send an enquiry</Link>
-            </div>
+            </motion.div>
           </div>
 
         </div>

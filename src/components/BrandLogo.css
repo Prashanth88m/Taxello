@@ -1,0 +1,42 @@
+.taxello-brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  color: #f7f7ff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.taxello-brand-wordmark {
+  background: linear-gradient(105deg, #fff 8%, #f8f7ff 44%, #d9d0ff 78%, #c8bfff 100%);
+  background-size: 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: .9rem;
+  font-weight: 850;
+  letter-spacing: -.045em;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(169, 156, 255, .16));
+  transition: filter .2s ease;
+}
+
+.taxello-brand:hover .taxello-brand-wordmark {
+  filter: drop-shadow(0 0 6px rgba(190, 177, 255, .26));
+}
+
+.taxello-brand:focus-visible {
+  outline: 2px solid #c8bfff;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.taxello-brand-large .taxello-brand-wordmark { font-size: 1.12rem; }
+
+@media (max-width: 380px) {
+  .taxello-brand-wordmark { font-size: .84rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taxello-brand-wordmark { transition: none; }
+}

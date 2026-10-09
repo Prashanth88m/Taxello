@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import GlassSelect from "./GlassSelect";
 
 const phoneCountries = [
   { id: "IN", name: "India", callingCode: "+91", min: 10, max: 10, pattern: /^[6-9]\d{9}$/ },
@@ -45,8 +46,7 @@ export default function PhoneInput({ required = false, resetKey = 0 }) {
     setValidationMessage(error);
   }
 
-  function updateCountry(event) {
-    const nextCountryId = event.target.value;
+  function updateCountry(nextCountryId) {
     const nextCountry = phoneCountries.find((item) => item.id === nextCountryId);
     const nextNumber = nationalNumber.slice(0, nextCountry.max);
     const error = getPhoneError(nextCountryId, nextNumber);
@@ -58,9 +58,13 @@ export default function PhoneInput({ required = false, resetKey = 0 }) {
 
   return <div className="phone-input-container">
     <div className="phone-input-control">
-      <select aria-label="Country calling code" value={countryId} onChange={updateCountry}>
-        {phoneCountries.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.callingCode})</option>)}
-      </select>
+      <GlassSelect
+        ariaLabel="Country calling code"
+        className="phone-country-select"
+        value={countryId}
+        onChange={updateCountry}
+        options={phoneCountries.map((item) => ({ value: item.id, label: `${item.name} (${item.callingCode})` }))}
+      />
       <input
         ref={inputRef}
         id={inputId}

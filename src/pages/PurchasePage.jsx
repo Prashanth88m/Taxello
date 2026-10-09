@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { plans } from "../data/plans";
 import PageForm from "../components/PageForm";
 import PhoneInput from "../components/PhoneInput";
+import GlassSelect from "../components/GlassSelect";
 import { postApiRequest } from "../lib/api";
 import { useToast } from "../components/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -56,7 +57,7 @@ export default function PurchasePage() {
       <label>Email<input type="email" name="email" autoComplete="email" required /></label>
       <div className="phone-form-field"><span>Phone number</span><PhoneInput key={phoneInputKey} resetKey={phoneInputKey} required /></div>
     </div>
-    <label>Selected plan<select name="plan" value={selectedPlan} onChange={(event) => setSelectedPlan(event.target.value)} required>{plans.map((plan) => <option key={plan.name} value={plan.name}>{plan.name} {"\u2014 \u20B9"}{plan.price}{plan.name === "Business" ? "/month" : ""}</option>)}</select></label>
+    <label>Selected plan<GlassSelect name="plan" ariaLabel="Selected plan" value={selectedPlan} onChange={setSelectedPlan} options={plans.map((plan) => ({ value: plan.name, label: `${plan.name} — ₹${plan.price}${plan.name === "Business" ? "/month" : ""}` }))} /></label>
     <label>Additional requirements<textarea name="requirements" rows="5" placeholder="Share anything that will help us understand your needs." /></label>
     <button className="form-submit" type="submit" disabled={submitting}>{submitting ? "Sending..." : "Send plan enquiry"} <span>{"\u2192"}</span></button>
     <p className="form-note">Online payment is not currently collected. A TAXELLO representative can follow up regarding the selected plan.</p>

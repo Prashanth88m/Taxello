@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import "./ConfirmDialog.css";
 
 export default function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", cancelLabel = "Cancel", busy = false, onConfirm, onCancel, danger = false }) {
+  const reduceMotion = useReducedMotion();
   const cancelRef = useRef(null);
   const previousFocus = useRef(null);
   const onCancelRef = useRef(onCancel);
@@ -41,7 +42,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "Co
   }, [open]);
 
   return <AnimatePresence>
-    {open && <motion.div className="confirm-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onCancel(); }}>
+    {open && <motion.div className="confirm-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.16 }} onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onCancel(); }}>
       <motion.section
         className="confirm-dialog"
         data-confirm-dialog
@@ -49,10 +50,10 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "Co
         aria-modal="true"
         aria-labelledby="confirm-title"
         aria-describedby="confirm-message"
-        initial={{ opacity: 0, y: 12, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 8, scale: 0.99 }}
-        transition={{ duration: 0.2 }}
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 5, scale: 0.985 }}
+        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 3, scale: 0.99 }}
+        transition={{ duration: reduceMotion ? 0.1 : 0.17, ease: "easeOut" }}
       >
         <span className={`confirm-icon${danger ? " confirm-icon-danger" : ""}`}><AlertTriangle size={19} /></span>
         <h2 id="confirm-title">{title}</h2>

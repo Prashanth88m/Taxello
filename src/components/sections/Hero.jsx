@@ -6,8 +6,6 @@ import {
 } from "lucide-react";
 import "./Hero.css";
 import { Link } from "react-router-dom";
-import { useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
 import heroWorkspace from "../../assets/images/hero-financial-workspace.webp";
 import { fadeUp } from "../../motionPresets";
 
@@ -17,17 +15,12 @@ const heroSequence = {
 };
 
 function Hero() {
-  const heroRef = useRef(null);
-  const reduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const orbY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 24]);
-  const visualY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -12]);
   return (
-    <section className="taxello-hero" id="home" ref={heroRef}>
+    <section className="taxello-hero" id="home">
 
       {/* Background atmosphere */}
-      <motion.div className="hero-orb hero-orb-blue" style={{ y: orbY }} />
-      <motion.div className="hero-orb hero-orb-purple" style={{ y: orbY }} />
+      <div className="hero-orb hero-orb-blue" />
+      <div className="hero-orb hero-orb-purple" />
       <div className="hero-orb hero-orb-orange"></div>
 
       <div className="hero-grid"></div>
@@ -104,7 +97,6 @@ function Hero() {
         {/* Tax visual */}
         <motion.div
           className="hero-tax-visual"
-          style={{ y: visualY }}
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.2 }}
@@ -118,7 +110,7 @@ function Hero() {
             height="686"
             fetchPriority="high"
             decoding="async"
-            sizes="(max-width: 700px) 100vw, (max-width: 1200px) 90vw, 1100px"
+            sizes="(max-width: 700px) 100vw, (max-width: 1200px) 90vw, 1000px"
           />
 
           <div className="floating-info floating-info-one">

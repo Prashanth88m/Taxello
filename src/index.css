@@ -24,6 +24,8 @@ html {
   scroll-behavior: smooth;
 }
 
+section[id] { scroll-margin-top: 104px; }
+
 body {
   margin: 0;
 
@@ -39,12 +41,6 @@ body {
 
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-}
-
-@media (max-width: 960px) {
-  .app-main {
-    padding-bottom: 82px;
-  }
 }
 
 a {
@@ -69,7 +65,6 @@ input {
   --taxello-glass-shadow: 0 18px 48px rgba(0, 0, 0, 0.24), inset 0 1px rgba(255, 255, 255, 0.07);
 }
 
-.service-card,
 .pricing-card,
 .about-card,
 .about-preview-points article,
@@ -78,7 +73,6 @@ input {
   transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.service-card:hover,
 .pricing-card:hover,
 .about-card:hover,
 .about-preview-points article:hover,
@@ -152,6 +146,12 @@ input {
 
 h1, h2, h3, h4 { text-wrap: pretty; }
 p { text-wrap: pretty; }
+
+@media (min-width: 761px) {
+  .page-form-heading p, .admin-heading p, .page-details p,
+  .about-story-inner p, .contact-next-grid p { font-size: 1.02rem; }
+  .page-form label, .phone-form-field, .page-form-custom-field { font-size: .96rem; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

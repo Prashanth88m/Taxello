@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { ToastContext } from "./ToastContext";
 import "./Toast.css";
@@ -7,6 +7,7 @@ import "./Toast.css";
 export default function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
   const nextId = useRef(0);
+  const reduceMotion = useReducedMotion();
 
   const showToast = useCallback((message, type = "success") => {
     nextId.current += 1;
@@ -17,7 +18,7 @@ export default function ToastProvider({ children }) {
   const contextValue = useMemo(() => ({ showToast }), [showToast]);
 
   useEffect(() => {
-    if (!toast) return undefined;
+    if (!toast || toast.type === "error") return undefined;
     const timeout = window.setTimeout(dismissToast, 4000);
     return () => window.clearTimeout(timeout);
   }, [toast, dismissToast]);
@@ -26,19 +27,19 @@ export default function ToastProvider({ children }) {
 
   return <ToastContext.Provider value={contextValue}>
     {children}
-    <div className="taxello-toast-region" aria-live="polite" aria-atomic="true">
+    <div className="taxello-toast-region" aria-live={toast?.type === "error" ? "assertive" : "polite"} aria-atomic="true">
       <AnimatePresence initial={false}>
         {toast && <motion.div
           key={toast.id}
           className={`taxello-toast taxello-toast-${toast.type}`}
           role={toast.type === "error" ? "alert" : "status"}
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.22, ease: "easeOut" }}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -5 }}
+          animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -3 }}
+          transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: "easeOut" }}
         >
           <ToastIcon size={19} aria-hidden="true" />
-          <span>{toast.type === "success" ? `✓ ${toast.message}` : toast.message}</span>
+          <span>{toast.message}</span>
           <button type="button" onClick={dismissToast} aria-label="Dismiss notification"><X size={17} /></button>
         </motion.div>}
       </AnimatePresence>

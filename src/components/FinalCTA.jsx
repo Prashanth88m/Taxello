@@ -6,7 +6,7 @@ import ctaWorkspace from "../assets/images/cta-financial-workspace.webp";
 import { fadeUp, revealViewport } from "../motionPresets";
 
 export default function FinalCTA() {
-  return <section className="home-final-cta">
+  return <section className="home-final-cta" id="contact">
     <div className="home-final-cta-inner">
       <motion.img
         className="home-final-cta-image"
