@@ -46,13 +46,26 @@ export const countryProfiles = {
   },
 };
 
+// Guardrail for this personal-income estimator: support up to one billion
+// currency units (₹100 crore for the default India profile) without accepting
+// inputs beyond a useful, safely presentable range.
+export const MAX_ANNUAL_INCOME = 1_000_000_000;
+
+export function isIncomeOverLimit(value) {
+  if (typeof value !== "string" || !/^\d+$/.test(value)) return false;
+  const normalized = value.replace(/^0+(?=\d)/, "");
+  const maximum = String(MAX_ANNUAL_INCOME);
+  return normalized.length > maximum.length || (normalized.length === maximum.length && normalized > maximum);
+}
+
 export function parseIncome(value) {
-  if (typeof value !== "string" || value.trim() === "") return null;
+  if (typeof value !== "string" || !/^\d+$/.test(value) || isIncomeOverLimit(value)) return null;
   const amount = Number(value);
-  return Number.isFinite(amount) && amount >= 0 ? amount : null;
+  return Number.isFinite(amount) ? amount : null;
 }
 
 export function calculateIndiaTax(taxableIncome) {
+  if (!Number.isFinite(taxableIncome) || taxableIncome < 0 || taxableIncome > MAX_ANNUAL_INCOME) return null;
   let tax;
 
   if (taxableIncome <= 400000) {
@@ -88,10 +101,12 @@ export function calculateEstimate(value, country, employment) {
   const standardDeduction = employment === "salary" ? Math.min(75000, grossIncome) : 0;
   const taxableIncome = Math.max(0, grossIncome - standardDeduction);
   const taxResult = calculateIndiaTax(taxableIncome);
+  if (!taxResult || ![taxResult.tax, taxResult.cess, taxResult.total].every(Number.isFinite)) return null;
   return { grossIncome, standardDeduction, taxableIncome, hasTaxRules: true, ...taxResult };
 }
 
 export function formatCurrency(value, profile) {
+  if (!Number.isFinite(value) || !profile || !profile.locale || !profile.symbol) return "—";
   const formattedNumber = new Intl.NumberFormat(profile.locale, {
     maximumFractionDigits: 0,
   }).format(Math.round(value));

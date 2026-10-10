@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateEstimate, countryProfiles, formatCurrency, parseIncome } from "./taxCalculator.js";
+import { calculateEstimate, calculateIndiaTax, countryProfiles, formatCurrency, isIncomeOverLimit, MAX_ANNUAL_INCOME, parseIncome } from "./taxCalculator.js";
 
 test("income parsing rejects empty, negative, non-finite, and malformed values while accepting zero", () => {
   assert.equal(parseIncome(""), null);
@@ -8,8 +8,18 @@ test("income parsing rejects empty, negative, non-finite, and malformed values w
   assert.equal(parseIncome("-1"), null);
   assert.equal(parseIncome("Infinity"), null);
   assert.equal(parseIncome("not a number"), null);
+  assert.equal(parseIncome("1e6"), null);
+  assert.equal(parseIncome("1.5"), null);
   assert.equal(parseIncome("0"), 0);
   assert.equal(parseIncome("1000000"), 1000000);
+});
+
+test("annual income accepts the documented maximum and rejects values above it", () => {
+  assert.equal(parseIncome(String(MAX_ANNUAL_INCOME)), MAX_ANNUAL_INCOME);
+  assert.equal(isIncomeOverLimit(String(MAX_ANNUAL_INCOME)), false);
+  assert.equal(parseIncome(String(MAX_ANNUAL_INCOME + 1)), null);
+  assert.equal(isIncomeOverLimit(String(MAX_ANNUAL_INCOME + 1)), true);
+  assert.equal(parseIncome("9".repeat(400)), null);
 });
 
 test("India retains the existing illustrative salary deduction and calculation", () => {
@@ -37,4 +47,15 @@ test("other supported countries remain currency-only and do not use India slabs"
 
 test("currency display uses Indian digit grouping", () => {
   assert.equal(formatCurrency(1234567, countryProfiles.IN), "\u20B912,34,567");
+});
+
+test("maximum and ordinary estimates remain finite and invalid formatting is safe", () => {
+  const maximumEstimate = calculateEstimate(String(MAX_ANNUAL_INCOME), "IN", "business");
+  const ordinaryEstimate = calculateEstimate("1000000", "IN", "business");
+  assert.ok([maximumEstimate.tax, maximumEstimate.cess, maximumEstimate.total].every(Number.isFinite));
+  assert.ok([ordinaryEstimate.tax, ordinaryEstimate.cess, ordinaryEstimate.total].every(Number.isFinite));
+  assert.equal(calculateIndiaTax(Infinity), null);
+  assert.equal(formatCurrency(Infinity, countryProfiles.IN), "—");
+  assert.equal(formatCurrency(NaN, countryProfiles.IN), "—");
+  assert.match(formatCurrency(maximumEstimate.total, countryProfiles.IN), /^\u20B9[\d,]+$/);
 });

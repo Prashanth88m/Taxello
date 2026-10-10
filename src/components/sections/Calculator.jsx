@@ -4,7 +4,7 @@ import { ArrowRight, Calculator as CalculatorIcon, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import GlassSelect from "../GlassSelect";
 import { fadeUp, revealViewport } from "../../motionPresets";
-import { calculateEstimate, countryProfiles, formatCurrency, parseIncome } from "../../lib/taxCalculator";
+import { calculateEstimate, countryProfiles, formatCurrency, isIncomeOverLimit, MAX_ANNUAL_INCOME, parseIncome } from "../../lib/taxCalculator";
 import "./Calculator.css";
 
 function Calculator() {
@@ -14,6 +14,7 @@ function Calculator() {
   const profile = countryProfiles[country];
   const validIncome = parseIncome(income);
   const invalidIncome = income.trim() !== "" && validIncome === null;
+  const overIncomeLimit = isIncomeOverLimit(income);
 
   const result = useMemo(() => {
     return calculateEstimate(income, country, employment);
@@ -71,17 +72,24 @@ function Calculator() {
                 <span className="calculator-currency-symbol" aria-hidden="true">{profile.symbol}</span>
                 <input
                   id="income"
-                  type="number"
-                  min="0"
-                  step="any"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={income}
                   placeholder={profile.example}
                   aria-invalid={invalidIncome}
                   aria-describedby={invalidIncome ? "income-error" : undefined}
-                  onChange={(event) => setIncome(event.target.value)}
+                  onChange={(event) => {
+                    const nextIncome = event.target.value;
+                    if (/^\d*$/.test(nextIncome)) setIncome(nextIncome);
+                  }}
                 />
               </div>
-              {invalidIncome && <small id="income-error" className="calculator-input-error" role="alert">Enter a valid, finite amount of zero or more.</small>}
+              {invalidIncome && <small id="income-error" className="calculator-input-error" role="alert">
+                {overIncomeLimit
+                  ? `Maximum supported annual income is ${formatCurrency(MAX_ANNUAL_INCOME, profile)}.`
+                  : "Enter a whole amount using digits only."}
+              </small>}
             </div>
 
             {country === "IN" && <div className="calculator-field">
@@ -101,7 +109,7 @@ function Calculator() {
             <div className="calculator-note">
               <Info size={15} />
               <span>{country === "IN"
-                ? <>Salaried users are shown with an illustrative \u20B975,000 standard deduction. {profile.profileLabel}.</>
+                ? <>Salaried users are shown with an illustrative {"\u20B9"}75,000 standard deduction. {profile.profileLabel}.</>
                 : <>Tax rules vary by country and tax year. {profile.profileLabel}; no foreign tax estimate is shown.</>}</span>
             </div>
           </div>
