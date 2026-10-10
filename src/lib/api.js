@@ -2,14 +2,13 @@ const localHost = window.location.hostname.includes(":")
   ? `[${window.location.hostname}]`
   : window.location.hostname;
 
-const configuredApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
 // A single-service production deployment serves the React app and API from
 // the same Express origin. Keep port 5000 only for local Vite development.
-const apiBaseUrl = configuredApiUrl || (
-  import.meta.env.DEV
-    ? `${window.location.protocol}//${localHost}:5000`
-    : ""
-);
+// Production is a single Railway service: Express serves both the app and API,
+// so always use same-origin /api paths regardless of build-time overrides.
+const apiBaseUrl = import.meta.env.DEV
+  ? import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "") || `${window.location.protocol}//${localHost}:5000`
+  : "";
 
 async function requestApi(path, options) {
   let response;

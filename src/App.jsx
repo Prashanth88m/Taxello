@@ -16,15 +16,17 @@ import ScrollToTop from "./components/ScrollToTop";
 function App() {
   const location = useLocation();
   const reduceMotion = useReducedMotion();
+  const normalizedPath = location.pathname.replace(/\/+$/, "");
+  const isAdminRoute = normalizedPath === "/admin" || normalizedPath.startsWith("/admin/");
 
   return (
     <>
       <ScrollToTop />
-      <FloatingNav />
+      {!isAdminRoute && <FloatingNav />}
       <AnimatePresence mode="wait" initial={false}>
         <motion.main
-          className="app-main"
-          key={location.pathname}
+          className={isAdminRoute ? "app-main app-main-admin" : "app-main"}
+          key={isAdminRoute ? "/admin-workspace" : location.pathname}
           initial={reduceMotion ? false : { opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? undefined : { opacity: 0, y: -2 }}
@@ -39,12 +41,12 @@ function App() {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/purchase" element={<PurchasePage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin/*" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </motion.main>
       </AnimatePresence>
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </>
   );
 }

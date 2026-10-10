@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { ToastContext } from "./ToastContext";
 import "./Toast.css";
 
 export default function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
+  const location = useLocation();
   const nextId = useRef(0);
   const reduceMotion = useReducedMotion();
 
@@ -27,7 +29,7 @@ export default function ToastProvider({ children }) {
 
   return <ToastContext.Provider value={contextValue}>
     {children}
-    <div className="taxello-toast-region" aria-live={toast?.type === "error" ? "assertive" : "polite"} aria-atomic="true">
+    <div className={`taxello-toast-region${location.pathname.startsWith("/admin") ? " taxello-toast-region-admin" : ""}`} aria-live={toast?.type === "error" ? "assertive" : "polite"} aria-atomic="true">
       <AnimatePresence initial={false}>
         {toast && <motion.div
           key={toast.id}

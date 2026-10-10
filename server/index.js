@@ -286,13 +286,39 @@ const adminStatuses = {
   purchases: new Set(["pending", "contacted", "accepted", "in_progress", "completed", "cancelled"]),
 };
 
-function updateAdminRecord(request, response, next, { table, updater, statuses }) {
+const adminStatusTransitions = {
+  contacts: {
+    new: new Set(["accepted", "cancelled"]),
+    contacted: new Set(["accepted", "cancelled"]),
+    accepted: new Set(["in_progress", "cancelled"]),
+    in_progress: new Set(["completed", "cancelled"]),
+    completed: new Set(),
+    resolved: new Set(),
+    cancelled: new Set(),
+  },
+  purchases: {
+    pending: new Set(["accepted", "cancelled"]),
+    contacted: new Set(["accepted", "cancelled"]),
+    accepted: new Set(["in_progress", "cancelled"]),
+    in_progress: new Set(["completed", "cancelled"]),
+    completed: new Set(),
+    cancelled: new Set(),
+  },
+};
+
+function updateAdminRecord(request, response, next, { table, updater, statuses, transitions }) {
   try {
     const id = Number(request.params.id);
     const status = readText(request.body, "status", 30);
     const adminNote = readText(request.body, "adminNote", 2000);
     if (!Number.isSafeInteger(id) || id < 1) return validationError(response, "Enter a valid record ID.");
     if (!statuses.has(status)) return validationError(response, "Select a valid status.");
+    const currentRecord = database.prepare(`SELECT status FROM ${table} WHERE id = ?`).get(id);
+    if (!currentRecord) return response.status(404).json({ success: false, error: "Record not found." });
+    const currentStatus = currentRecord.status || (table === "contacts" ? "new" : "pending");
+    if (status !== currentStatus && !transitions[currentStatus]?.has(status)) {
+      return validationError(response, `Cannot change status from ${currentStatus} to ${status}.`);
+    }
     const result = updater.run(status, adminNote || null, id);
     if (!result.changes) return response.status(404).json({ success: false, error: "Record not found." });
     const record = database.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id);
@@ -315,10 +341,10 @@ function deleteAdminRecord(request, response, next, statement) {
 }
 
 app.patch("/api/admin/contacts/:id", requireAdmin, (request, response, next) =>
-  updateAdminRecord(request, response, next, { table: "contacts", updater: updateContactAdminFields, statuses: adminStatuses.contacts })
+  updateAdminRecord(request, response, next, { table: "contacts", updater: updateContactAdminFields, statuses: adminStatuses.contacts, transitions: adminStatusTransitions.contacts })
 );
 app.patch("/api/admin/purchases/:id", requireAdmin, (request, response, next) =>
-  updateAdminRecord(request, response, next, { table: "purchases", updater: updatePurchaseAdminFields, statuses: adminStatuses.purchases })
+  updateAdminRecord(request, response, next, { table: "purchases", updater: updatePurchaseAdminFields, statuses: adminStatuses.purchases, transitions: adminStatusTransitions.purchases })
 );
 app.delete("/api/admin/contacts/:id", requireAdmin, (request, response, next) =>
   deleteAdminRecord(request, response, next, deleteContact)
