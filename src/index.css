@@ -104,7 +104,7 @@ input {
 .page-primary-link:hover,
 .home-cta-button:hover,
 .section-more-link:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
 }
 
 .hero-main-button:hover svg,
@@ -115,7 +115,7 @@ input {
 .desktop-nav-cta:hover svg,
 .section-more-link:hover svg,
 .service-card:hover .service-arrow svg {
-  transform: translate(2px, -1px);
+  transform: translateX(4px);
 }
 
 .hero-main-button svg,
@@ -136,8 +136,10 @@ input {
 .form-submit:active,
 .page-primary-link:active,
 .home-cta-button:active {
-  transform: translateY(0);
+  transform: scale(.98);
 }
+
+.page-primary-link:active,.section-more-link:active,.desktop-nav-cta:active { transform: scale(.98); }
 
 :where(a, button, input, select, textarea):focus-visible {
   outline: 2px solid var(--taxello-lavender);

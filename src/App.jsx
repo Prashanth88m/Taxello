@@ -12,6 +12,7 @@ import ContactPage from "./pages/ContactPage";
 import AdminPage from "./pages/AdminPage";
 import FloatingNav from "./components/FloatingNav";
 import ScrollToTop from "./components/ScrollToTop";
+import LegalPage from "./pages/LegalPage";
 
 function App() {
   const location = useLocation();
@@ -41,6 +42,8 @@ function App() {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/purchase" element={<PurchasePage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/privacy" element={<LegalPage type="privacy" />} />
+            <Route path="/terms" element={<LegalPage type="terms" />} />
             <Route path="/admin/*" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

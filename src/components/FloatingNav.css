@@ -74,6 +74,21 @@
 
 .floating-nav-link:hover::before { opacity: 1; }
 
+.floating-nav-link::after {
+  position: absolute;
+  right: 14px;
+  bottom: 4px;
+  left: 14px;
+  height: 1px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #a99cff, #d9d0ff);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .2s ease;
+}
+.floating-nav-link:hover::after,.floating-nav-link:focus-visible::after { transform: scaleX(1); }
+
 .floating-nav-link:hover,
 .floating-nav-link.is-active {
   color: #fff;
@@ -212,5 +227,6 @@
   .floating-nav-cta,
   .floating-nav-mobile-cta,
   .floating-nav-link::before,
+  .floating-nav-link::after,
   .floating-nav-highlight { transition: none; }
 }

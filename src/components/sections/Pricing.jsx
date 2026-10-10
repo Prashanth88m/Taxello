@@ -1,18 +1,11 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Check,
-} from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import "./Pricing.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { plans } from "../../data/plans";
 import { fadeUp, revealViewport } from "../../motionPresets";
-import ConfirmDialog from "../ConfirmDialog";
 
 function Pricing({ preview = false }) {
-  const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState(null);
   return (
     <section className="taxello-pricing" id="pricing">
       <div className="pricing-orb pricing-orb-one"></div>
@@ -99,16 +92,15 @@ function Pricing({ preview = false }) {
                   ))}
                 </div>
 
-                <button
-                  type="button"
+                <Link
                   className={`pricing-button ${
                     plan.popular ? "pricing-button-primary" : ""
                   }`}
-                  onClick={() => setSelectedPlan(plan)}
+                  to={`/contact?plan=${plan.id}`}
                 >
-                  Purchase Plan
+                  Select Plan
                   <ArrowRight size={17} />
-                </button>
+                </Link>
               </motion.article>
             );
           })}
@@ -120,14 +112,6 @@ function Pricing({ preview = false }) {
           Listed prices are the current plan enquiry prices. Any additional service scope can be discussed before work begins; online payment is not currently collected.
         </p>
       </div>
-      <ConfirmDialog
-        open={Boolean(selectedPlan)}
-        title="Continue with this plan?"
-        message={`Continue with the ${selectedPlan?.name ?? "selected"} plan? Online payment is not currently collected.`}
-        confirmLabel="Continue"
-        onCancel={() => setSelectedPlan(null)}
-        onConfirm={() => navigate(`/purchase?plan=${encodeURIComponent(selectedPlan.name)}`)}
-      />
     </section>
   );
 }

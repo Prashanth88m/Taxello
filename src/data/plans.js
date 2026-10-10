@@ -2,6 +2,7 @@ import { Crown, Sparkles } from "lucide-react";
 
 export const plans = [
   {
+    id: "essential",
     name: "Essential",
     price: "499",
     period: "one-time",
@@ -10,6 +11,7 @@ export const plans = [
     features: ["Individual tax return support", "Basic document review", "Tax computation", "Filing assistance", "Email support"],
   },
   {
+    id: "professional",
     name: "Professional",
     price: "1,499",
     period: "one-time",
@@ -19,6 +21,7 @@ export const plans = [
     features: ["Everything in Essential", "Capital gains support", "Multiple income sources", "Detailed tax review", "Priority support"],
   },
   {
+    id: "business",
     name: "Business",
     price: "2,999",
     period: "per month",

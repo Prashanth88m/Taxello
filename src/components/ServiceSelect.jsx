@@ -12,14 +12,15 @@ const contactServices = [
   "Other enquiry",
 ];
 
-export default function ServiceSelect({ value, onChange, error = false, controlRef, labelledBy }) {
+export default function ServiceSelect({ value, onChange, error = false, controlRef, labelledBy, additionalOptions = [] }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
   const optionRefs = useRef([]);
   const initialFocusIndex = useRef(0);
-  const selectedIndex = contactServices.indexOf(value);
+  const options = [...contactServices, ...additionalOptions];
+  const selectedIndex = options.indexOf(value);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -39,7 +40,7 @@ export default function ServiceSelect({ value, onChange, error = false, controlR
   }
 
   function choose(index) {
-    onChange(contactServices[index]);
+    onChange(options[index]);
     setActiveIndex(index);
     setOpen(false);
     triggerRef.current?.focus();
@@ -62,8 +63,8 @@ export default function ServiceSelect({ value, onChange, error = false, controlR
     if (event.target === triggerRef.current) return;
     if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Home" || event.key === "End") {
       event.preventDefault();
-      const current = contactServices.indexOf(value) === activeIndex ? activeIndex : Math.max(0, optionRefs.current.indexOf(document.activeElement));
-      const next = event.key === "Home" ? 0 : event.key === "End" ? contactServices.length - 1 : (current + (event.key === "ArrowDown" ? 1 : -1) + contactServices.length) % contactServices.length;
+      const current = options.indexOf(value) === activeIndex ? activeIndex : Math.max(0, optionRefs.current.indexOf(document.activeElement));
+      const next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : (current + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
       setActiveIndex(next);
       optionRefs.current[next]?.focus();
     } else if (event.key === "Enter" || event.key === " ") {
@@ -102,7 +103,7 @@ export default function ServiceSelect({ value, onChange, error = false, controlR
     </button>
     <AnimatePresence>
       {open && <motion.ul id="contact-service-options" className="service-select-options" role="listbox" aria-labelledby={labelledBy} initial={{ opacity: 0, height: 0, y: -5 }} animate={{ opacity: 1, height: "auto", y: 0 }} exit={{ opacity: 0, height: 0, y: -5 }} transition={{ duration: .18 }}>
-        {contactServices.map((service, index) => <li
+        {options.map((service, index) => <li
           key={service}
           ref={(node) => { optionRefs.current[index] = node; }}
           role="option"

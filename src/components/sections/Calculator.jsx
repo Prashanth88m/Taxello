@@ -4,120 +4,20 @@ import { ArrowRight, Calculator as CalculatorIcon, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import GlassSelect from "../GlassSelect";
 import { fadeUp, revealViewport } from "../../motionPresets";
+import { calculateEstimate, countryProfiles, formatCurrency, parseIncome } from "../../lib/taxCalculator";
 import "./Calculator.css";
-
-const countryProfiles = {
-  IN: {
-    name: "India",
-    currency: "INR",
-    symbol: "\u20B9",
-    locale: "en-IN",
-    example: "e.g. 1000000",
-    profileLabel: "Illustrative India new-regime profile",
-    hasTaxRules: true,
-  },
-  US: {
-    name: "United States",
-    currency: "USD",
-    symbol: "$",
-    locale: "en-US",
-    example: "e.g. 100000",
-    profileLabel: "Country-specific rules not configured",
-    hasTaxRules: false,
-  },
-  GB: {
-    name: "United Kingdom",
-    currency: "GBP",
-    symbol: "\u00A3",
-    locale: "en-GB",
-    example: "e.g. 80000",
-    profileLabel: "Country-specific rules not configured",
-    hasTaxRules: false,
-  },
-  CA: {
-    name: "Canada",
-    currency: "CAD",
-    symbol: "C$",
-    locale: "en-CA",
-    example: "e.g. 100000",
-    profileLabel: "Country-specific rules not configured",
-    hasTaxRules: false,
-  },
-  AU: {
-    name: "Australia",
-    currency: "AUD",
-    symbol: "A$",
-    locale: "en-AU",
-    example: "e.g. 100000",
-    profileLabel: "Country-specific rules not configured",
-    hasTaxRules: false,
-  },
-};
-
-function calculateIndiaTax(taxableIncome) {
-  let tax;
-
-  if (taxableIncome <= 400000) {
-    tax = 0;
-  } else if (taxableIncome <= 800000) {
-    tax = (taxableIncome - 400000) * 0.05;
-  } else if (taxableIncome <= 1200000) {
-    tax = 20000 + (taxableIncome - 800000) * 0.10;
-  } else if (taxableIncome <= 1600000) {
-    tax = 60000 + (taxableIncome - 1200000) * 0.15;
-  } else if (taxableIncome <= 2000000) {
-    tax = 120000 + (taxableIncome - 1600000) * 0.20;
-  } else if (taxableIncome <= 2400000) {
-    tax = 200000 + (taxableIncome - 2000000) * 0.25;
-  } else {
-    tax = 300000 + (taxableIncome - 2400000) * 0.30;
-  }
-
-  // Illustrative application of Section 87A rebate.
-  if (taxableIncome <= 1200000) {
-    tax = 0;
-  }
-
-  // Health & Education Cess
-  const cess = tax * 0.04;
-
-  return { tax, cess, total: tax + cess };
-}
-
-function formatCurrency(value, profile) {
-  const formattedNumber = new Intl.NumberFormat(profile.locale, {
-    maximumFractionDigits: 0,
-  }).format(Math.round(value));
-  return `${profile.symbol}${formattedNumber}`;
-}
 
 function Calculator() {
   const [income, setIncome] = useState("");
   const [employment, setEmployment] = useState("salary");
   const [country, setCountry] = useState("IN");
   const profile = countryProfiles[country];
+  const validIncome = parseIncome(income);
+  const invalidIncome = income.trim() !== "" && validIncome === null;
 
   const result = useMemo(() => {
-    if (income === "") return null;
-
-    const grossIncome = Math.max(0, Number(income) || 0);
-    if (!profile.hasTaxRules) {
-      return { grossIncome, hasTaxRules: false };
-    }
-
-    // Keep the existing illustrative Indian standard deduction unchanged.
-    const standardDeduction = employment === "salary" ? Math.min(75000, grossIncome) : 0;
-    const taxableIncome = Math.max(0, grossIncome - standardDeduction);
-    const taxResult = calculateIndiaTax(taxableIncome);
-
-    return {
-      grossIncome,
-      standardDeduction,
-      taxableIncome,
-      hasTaxRules: true,
-      ...taxResult,
-    };
-  }, [income, employment, profile]);
+    return calculateEstimate(income, country, employment);
+  }, [income, employment, country]);
 
   return (
     <section className="taxello-calculator" id="calculator">
@@ -173,11 +73,15 @@ function Calculator() {
                   id="income"
                   type="number"
                   min="0"
+                  step="any"
                   value={income}
                   placeholder={profile.example}
+                  aria-invalid={invalidIncome}
+                  aria-describedby={invalidIncome ? "income-error" : undefined}
                   onChange={(event) => setIncome(event.target.value)}
                 />
               </div>
+              {invalidIncome && <small id="income-error" className="calculator-input-error" role="alert">Enter a valid, finite amount of zero or more.</small>}
             </div>
 
             {country === "IN" && <div className="calculator-field">
@@ -227,9 +131,10 @@ function Calculator() {
               : "Enter your income above to see an illustrative estimate."}</p>
 
             <div className="result-breakdown">
-              <div><span>Gross income</span><strong>{result ? formatCurrency(result.grossIncome, profile) : "\u2014"}</strong></div>
+              <div><span>Total income</span><strong>{result ? formatCurrency(result.grossIncome, profile) : "\u2014"}</strong></div>
               <div><span>Taxable income</span><strong>{result?.hasTaxRules ? formatCurrency(result.taxableIncome, profile) : result ? "Unavailable" : "\u2014"}</strong></div>
               <div><span>Estimated cess</span><strong>{result?.hasTaxRules ? formatCurrency(result.cess, profile) : result ? "Unavailable" : "\u2014"}</strong></div>
+              <div><span>Effective tax rate</span><strong>{result?.hasTaxRules && result.grossIncome > 0 ? `${((result.total / result.grossIncome) * 100).toFixed(1)}%` : result?.hasTaxRules ? "0%" : result ? "Unavailable" : "\u2014"}</strong></div>
             </div>
 
             <Link to="/contact" className="calculator-cta">Discuss your taxes<ArrowRight size={17} /></Link>

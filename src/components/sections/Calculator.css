@@ -272,6 +272,9 @@
   appearance: none;
 }
 
+.calculator-input-error { display: block; margin-top: 7px; color: #ffb7a8; font-size: .78rem; line-height: 1.45; }
+.income-input:has(input[aria-invalid="true"]) { border-color: rgba(255, 156, 136, .6); }
+
 .calculator-field select {
   width: 100%;
 
@@ -403,7 +406,7 @@
 .result-breakdown {
   display: grid;
 
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 
   gap: 10px;
 }
@@ -520,7 +523,7 @@
     padding: 25px;
   }
 
-  .result-breakdown {
-    grid-template-columns: 1fr;
-  }
+  .result-breakdown { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+@media (max-width: 380px) { .result-breakdown { grid-template-columns: 1fr; } }

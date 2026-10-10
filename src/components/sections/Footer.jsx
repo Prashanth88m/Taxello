@@ -51,9 +51,7 @@ function Footer() {
             © 2026 TAXELLO. Tax and accounting support.
           </span>
 
-          <span>
-            Clear information. Practical next steps.
-          </span>
+          <div className="footer-bottom-meta"><span>Clear information. Practical next steps.</span><div className="footer-legal-links"><Link to="/privacy">Privacy overview</Link><Link to="/terms">Terms of use</Link></div></div>
         </div>
       </footer>
     </>

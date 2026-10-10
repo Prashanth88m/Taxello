@@ -1,15 +1,21 @@
 import { useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import PageForm from "../components/PageForm";
 import PhoneInput from "../components/PhoneInput";
 import ServiceSelect from "../components/ServiceSelect";
 import { postApiRequest } from "../lib/api";
 import { useToast } from "../components/ToastContext";
+import { plans } from "../data/plans";
 import "./PageStyles.css";
 
 export default function ContactPage() {
+  const [searchParams] = useSearchParams();
+  const requestedPlanId = searchParams.get("plan");
+  const requestedPlan = plans.find((plan) => plan.id === requestedPlanId);
+  const planEnquiryOptions = plans.map((plan) => `Plan enquiry — ${plan.name}`);
   const [submitting, setSubmitting] = useState(false);
   const [phoneInputKey, setPhoneInputKey] = useState(0);
-  const [service, setService] = useState("");
+  const [service, setService] = useState(() => requestedPlan ? `Plan enquiry — ${requestedPlan.name}` : "");
   const [serviceError, setServiceError] = useState(false);
   const serviceControlRef = useRef(null);
   const submissionInProgress = useRef(false);
@@ -50,7 +56,7 @@ export default function ContactPage() {
       <label>Email<input type="email" name="email" autoComplete="email" required /></label>
       <div className="phone-form-field"><span>Phone</span><PhoneInput key={phoneInputKey} resetKey={phoneInputKey} /></div>
     </div>
-    <div className="page-form-custom-field"><span id="contact-service-label">Service</span><ServiceSelect value={service} onChange={(nextService) => { setService(nextService); setServiceError(false); }} error={serviceError} controlRef={serviceControlRef} labelledBy="contact-service-label" />{serviceError && <small id="contact-service-error" className="service-select-error" role="alert">Please select a service.</small>}</div>
+    <div className="page-form-custom-field"><span id="contact-service-label">Service</span><ServiceSelect value={service} additionalOptions={planEnquiryOptions} onChange={(nextService) => { setService(nextService); setServiceError(false); }} error={serviceError} controlRef={serviceControlRef} labelledBy="contact-service-label" />{serviceError && <small id="contact-service-error" className="service-select-error" role="alert">Please select a service.</small>}</div>
     <label>Message<textarea name="message" rows="5" placeholder="Tell us what you need help with." /></label>
     <button className="form-submit" type="submit" disabled={submitting}>{submitting ? "Sending..." : "Send enquiry"} <span>{"\u2192"}</span></button>
     <p className="form-note">Share the service you need, relevant context, and any deadlines or records that may help us understand your request.</p>
