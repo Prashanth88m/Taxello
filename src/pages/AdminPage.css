@@ -49,6 +49,9 @@
 .tax-admin-button:disabled, .tax-admin-icon-button:disabled { opacity: .42; cursor: not-allowed; }
 .tax-admin-button-primary { border-color: rgba(185,166,255,.3); background: linear-gradient(135deg, rgba(141,117,219,.9), rgba(112,90,185,.86)); color: #fff; }
 .tax-admin-button-primary:hover:not(:disabled) { background: linear-gradient(135deg, #9a85e4, #8169ca); }
+.tax-admin-button-ghost { background: transparent; }
+.tax-admin-button-ghost:hover:not(:disabled) { border-color: rgba(255,255,255,.16); background: rgba(255,255,255,.05); }
+.tax-admin-action-spinner { flex: 0 0 auto; animation: tax-admin-spin .8s linear infinite; }
 .tax-admin-button-muted { color: #d4d4df; }
 .tax-admin-spinning { animation: tax-admin-spin .8s linear infinite; }
 @keyframes tax-admin-spin { to { transform: rotate(360deg); } }
@@ -59,7 +62,7 @@
 .tax-admin-metric-group { min-width: 0; padding: 16px; border: 1px solid var(--admin-border); border-radius: 14px; background: var(--admin-panel); box-shadow: 0 8px 24px rgba(0,0,0,.14), inset 0 1px rgba(255,255,255,.025); }
 .tax-admin-metric-group h2 { margin: 0 0 12px; color: #d8d8e2; font-size: 12px; font-weight: 650; }
 .tax-admin-metrics { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
-.tax-admin-metric { position: relative; min-width: 0; display: grid; grid-template-columns: 25px 1fr; align-items: center; gap: 4px 7px; padding: 10px 9px; border: 1px solid rgba(255,255,255,.065); border-radius: 10px; background: rgba(0,0,0,.13); }
+.tax-admin-metric { position: relative; min-width: 0; display: grid; grid-template-columns: 25px minmax(0,1fr); align-items: center; gap: 4px 7px; padding: 10px 9px; border: 1px solid rgba(255,255,255,.065); border-radius: 10px; background: rgba(0,0,0,.13); }
 .tax-admin-metric-icon { grid-row: span 2; display: grid; width: 25px; height: 25px; place-items: center; border-radius: 8px; background: rgba(185,166,255,.1); color: var(--admin-accent); }
 .tax-admin-metric-label { min-width: 0; color: #a6a7b6; font-size: 9px; line-height: 1.35; overflow-wrap: anywhere; }
 .tax-admin-metric strong { font-size: 19px; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -96,9 +99,9 @@
 .tax-admin-status { flex: 0 0 auto; padding: 5px 8px; border: 1px solid rgba(255,255,255,.08); border-radius: 7px; background: rgba(255,255,255,.045); color: #c7c8d3; font-size: 10px; font-weight: 650; }
 .tax-admin-status.status-new, .tax-admin-status.status-pending { border-color: rgba(230,184,94,.2); background: rgba(230,184,94,.08); color: #e8c47d; }
 .tax-admin-status.status-accepted { border-color: rgba(185,166,255,.2); background: rgba(185,166,255,.09); color: #c9baff; }
-.tax-admin-status.status-in_progress { border-color: rgba(123,166,218,.2); background: rgba(123,166,218,.08); color: #a5c4ea; }
-.tax-admin-status.status-completed, .tax-admin-status.status-resolved { border-color: rgba(119,183,144,.2); background: rgba(119,183,144,.08); color: #9ac8a9; }
-.tax-admin-status.status-cancelled { border-color: rgba(203,125,131,.2); background: rgba(203,125,131,.08); color: #d89da2; }
+.tax-admin-status.status-in_progress { border-color: #3b82f6; background: #1e3a8a; color: #eff6ff; }
+.tax-admin-status.status-completed, .tax-admin-status.status-resolved { border-color: #10b981; background: #064e3b; color: #ecfdf5; }
+.tax-admin-status.status-cancelled { border-color: #ef4444; background: #7f1d1d; color: #fef2f2; }
 .tax-admin-overdue { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px; color: #e9bf73; font-size: 10px; }
 .tax-admin-record-meta { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.06); }
 .tax-admin-record-meta > div { display: grid; gap: 4px; min-width: 110px; }
@@ -106,14 +109,15 @@
 .tax-admin-record-meta strong { color: #dcdae5; font-size: 11px; font-weight: 560; }
 .tax-admin-record-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; }
 .tax-admin-record-actions > .tax-admin-button { min-height: 31px; padding: 6px 10px; font-size: 10px; }
-.tax-admin-details, .tax-admin-note-details { position: relative; }
-.tax-admin-details summary, .tax-admin-note-details summary { display: inline-flex; align-items: center; gap: 6px; min-height: 31px; padding: 0 9px; border: 1px solid rgba(255,255,255,.09); border-radius: 8px; color: #c1c1cf; font-size: 10px; cursor: pointer; list-style: none; }
-.tax-admin-details summary::-webkit-details-marker, .tax-admin-note-details summary::-webkit-details-marker { display: none; }
-.tax-admin-details summary:hover, .tax-admin-note-details summary:hover { border-color: rgba(185,166,255,.3); color: #e1d9ff; }
-.tax-admin-detail-body { position: absolute; z-index: 4; top: calc(100% + 7px); left: 0; width: min(360px, calc(100vw - 56px)); display: grid; gap: 12px; padding: 13px; border: 1px solid rgba(255,255,255,.13); border-radius: 10px; background: #171920; box-shadow: 0 14px 35px rgba(0,0,0,.38); }
+.tax-admin-details, .tax-admin-note-details { display: contents; }
+.tax-admin-action-feedback { margin: 0; padding: 2px 3px; color: #b8e7d2; flex-basis: 100%; font-size: 11px; line-height: 1.45; }
+.tax-admin-action-feedback.error { color: #f0b7bc; }
+.tax-admin-disclosure-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 31px; padding: 0 9px; border: 1px solid rgba(255,255,255,.09); border-radius: 8px; background: transparent; color: #c1c1cf; font: inherit; font-size: 11px; cursor: pointer; transition: background .15s ease-in-out, border-color .15s ease-in-out, color .15s ease-in-out; }
+.tax-admin-disclosure-trigger:hover { border-color: rgba(255,255,255,.16); background: rgba(255,255,255,.05); color: #f4f4f7; }
+.tax-admin-disclosure-trigger:disabled { opacity: .45; cursor: not-allowed; }
+.tax-admin-details-content, .tax-admin-note-content { flex: 1 0 100%; min-width: 0; }
+.tax-admin-detail-body { width: min(360px, 100%); display: grid; gap: 12px; padding: 13px; border: 1px solid rgba(255,255,255,.13); border-radius: 10px; background: #171920; box-shadow: 0 14px 35px rgba(0,0,0,.28); }
 .tax-admin-detail-body p { margin-top: 5px; color: #d1d0dc; font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
-.tax-admin-note-details[open] { flex-basis: 100%; }
-.tax-admin-note-details[open] summary { margin-bottom: 8px; }
 .tax-admin-note-editor { max-width: 540px; display: grid; gap: 7px; padding: 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 9px; background: rgba(0,0,0,.16); }
 .tax-admin-note-editor label { color: #aeb0be; font-size: 10px; }
 .tax-admin-note-editor textarea { width: 100%; resize: vertical; padding: 9px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; outline: 0; background: #101116; color: var(--admin-text); font: inherit; font-size: 11px; line-height: 1.5; }
@@ -121,7 +125,7 @@
 .tax-admin-note-editor .tax-admin-button { justify-self: start; }
 .tax-admin-icon-button { width: 32px; min-width: 32px; min-height: 32px; padding: 0; }
 .tax-admin-delete { margin-left: auto; color: #d48f94; }
-.tax-admin-delete:hover:not(:disabled) { border-color: rgba(239,68,68,.58); background: rgba(239,68,68,.14); color: #fecaca; }
+.tax-admin-delete:hover:not(:disabled) { border-color: #ef4444; background: rgba(239,68,68,.14); color: #fecaca; }
 .tax-admin-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; padding-top: 13px; border-top: 1px solid rgba(255,255,255,.07); color: var(--admin-muted); font-size: 10px; }
 .tax-admin-pagination > div { display: flex; align-items: center; gap: 10px; }
 .tax-admin-empty { display: grid; justify-items: center; padding: 42px 18px; border: 1px dashed rgba(255,255,255,.12); border-radius: 10px; text-align: center; }
@@ -151,6 +155,10 @@
   .tax-admin-shell { grid-template-columns: 205px minmax(0,1fr); }
   .tax-admin-metric-groups { grid-template-columns: 1fr; }
 }
+@media (max-width: 900px) {
+  .tax-admin-topbar { align-items: flex-start; flex-wrap: wrap; }
+  .tax-admin-top-actions { flex-wrap: wrap; justify-content: flex-end; }
+}
 @media (max-width: 760px) {
   .tax-admin-shell { display: block; }
   .tax-admin-sidebar { position: relative; height: auto; padding: 12px 16px 10px; border-right: 0; border-bottom: 1px solid var(--admin-border); }
@@ -159,7 +167,8 @@
   .tax-admin-nav-label { display: none; }
   .tax-admin-nav { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 1px; }
   .tax-admin-nav-item { flex: 0 0 auto; width: auto; min-height: 36px; gap: 7px; padding: 0 9px; font-size: 10px; }
-  .tax-admin-sidebar-bottom { display: flex; gap: 5px; margin-top: 8px; padding-top: 8px; }
+  .tax-admin-sidebar-bottom { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; padding-top: 8px; }
+  .tax-admin-sidebar-bottom .tax-admin-profile { flex: 1 0 100%; }
   .tax-admin-main { padding: 20px 15px 38px; }
   .tax-admin-topbar { align-items: flex-start; padding-bottom: 18px; }
   .tax-admin-session { display: none; }
@@ -189,7 +198,7 @@
   .tax-admin-record-meta { gap: 12px 18px; }
   .tax-admin-record-actions { gap: 6px; }
   .tax-admin-record-actions > .tax-admin-button { flex: 1 0 auto; }
-  .tax-admin-details summary, .tax-admin-note-details summary { padding: 0 7px; }
+  .tax-admin-disclosure-trigger { padding: 0 7px; }
   .tax-admin-login-card { padding: 25px 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -204,7 +213,7 @@
 .tax-admin-welcome h2 { font-size: 21px; }
 .tax-admin-welcome p { font-size: 13px; line-height: 1.55; }
 .tax-admin-metric-group h2 { font-size: 13px; }
-.tax-admin-metric-label { color: #b0b1bf; font-size: 11px; line-height: 1.4; }
+.tax-admin-metric-label { min-width: 0; color: #b0b1bf; font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
 .tax-admin-metric strong { font-size: 20px; }
 .tax-admin-tabs button { font-size: 13px; }
 .tax-admin-tabs button span, .tax-admin-count { font-size: 11px; }
@@ -219,7 +228,7 @@
 .tax-admin-record-meta span, .tax-admin-detail-body span { color: #afb0bd; font-size: 10px; }
 .tax-admin-record-meta strong { font-size: 12px; }
 .tax-admin-record-actions > .tax-admin-button { font-size: 11px; }
-.tax-admin-details summary, .tax-admin-note-details summary { font-size: 11px; }
+.tax-admin-disclosure-trigger { font-size: 12px; }
 .tax-admin-note-editor label { font-size: 11px; }
 .tax-admin-note-editor textarea { font-size: 12px; }
 .tax-admin-pagination { font-size: 11px; }
@@ -254,22 +263,13 @@
 .tax-admin-recent-info span { overflow: hidden; color: #a9aab8; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .tax-admin-recent-list time { flex: 0 0 auto; color: #b0b1bf; font-size: 10px; }
 .tax-admin-route-panels > [hidden] { display: none; }
-.tax-admin-open-summary { margin-top: 15px; }
-.tax-admin-open-summary > header > span { max-width: 240px; color: #a6a7b6; font-size: 10px; text-align: right; }
-.tax-admin-open-group { display: grid; grid-template-columns: minmax(120px,.55fr) 1fr; align-items: center; gap: 14px; margin-top: 14px; }
-.tax-admin-open-group + .tax-admin-open-group { padding-top: 13px; border-top: 1px solid rgba(255,255,255,.065); }
-.tax-admin-open-group h4 { color: #d9d8e2; font-size: 12px; font-weight: 600; }
-.tax-admin-open-bars { display: grid; gap: 8px; }
-.tax-admin-open-bar { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 9px; color: #b9bac7; font-size: 12px; }
-.tax-admin-open-bar strong { color: #ecebf3; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
-.tax-admin-open-bar .queue-dot { width: 9px; height: 9px; border-radius: 50%; }
-.bar-open, .segment-accepted { background: #aa91f2; }
-.bar-completed, .segment-completed { background: #91bb9f; }
-.bar-cancelled, .segment-cancelled { background: #c77f87; }
+.segment-accepted { background: #aa91f2; }
+.segment-completed { background: #10b981; }
+.segment-cancelled { background: #ef4444; }
 .bar-other, .segment-other { background: #858795; }
 .segment-new, .segment-pending { background: #d5ae68; }
 .segment-contacted { background: #90a8cf; }
-.segment-in_progress { background: #8e9be0; }
+.segment-in_progress { background: #3b82f6; }
 .tax-admin-segmented-bar { display: flex; height: 14px; overflow: hidden; gap: 2px; margin: 19px 0 14px; border-radius: 9px; background: rgba(255,255,255,.07); }
 .tax-admin-segmented-bar span { min-width: 3px; transition: flex-grow .2s ease; }
 .tax-admin-segmented-bar span:first-child { border-radius: 9px 0 0 9px; }
@@ -297,7 +297,6 @@
 .tax-admin-recent-link:hover .tax-admin-recent-info strong { color: #d8ceff; }
 .tax-admin-recent-link:focus-visible { outline: 2px solid #b9a6ff; outline-offset: 3px; border-radius: 5px; }
 .tax-admin-last-updated { color: #b1b2bf; font-size: 11px; white-space: nowrap; }
-.tax-admin-metric-note { margin: 8px 2px 0; color: #a9aab8; font-size: 11px; line-height: 1.45; }
 .tax-admin-profile { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-top: 1px solid var(--admin-border); color: #dddce6; font-size: 12px; }
 .tax-admin-profile-avatar { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid rgba(185,166,255,.22); border-radius: 50%; background: rgba(185,166,255,.1); color: #d9ceff; font-size: 12px; font-weight: 700; }
 
@@ -312,9 +311,6 @@
   .tax-admin-nav-item { font-size: 11px; }
   .tax-admin-tabs button { font-size: 11px; }
   .tax-admin-visual-card { padding: 14px; }
-  .tax-admin-open-group { grid-template-columns: 1fr; gap: 8px; }
-  .tax-admin-open-summary > header { align-items: flex-start; flex-direction: column; }
-  .tax-admin-open-summary > header > span { max-width: none; text-align: left; }
   .tax-admin-recent-list li { gap: 7px; }
   .tax-admin-recent-list time { max-width: 90px; font-size: 9px; text-align: right; }
   .tax-admin-top-actions .tax-admin-last-updated { display: none; }

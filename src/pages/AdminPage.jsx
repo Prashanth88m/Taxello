@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowDownUp, BarChart3, Check, ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, FileText, IndianRupee, LogOut, Mail, MessageCircle, Phone, RefreshCw, Search, Trash2, Users } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AlertCircle, ArrowDownUp, BarChart3, Check, ChevronLeft, ChevronRight, ClipboardList, Download, ExternalLink, FileText, IndianRupee, LoaderCircle, LogOut, Mail, MessageCircle, Phone, RefreshCw, Search, Trash2, Users } from "lucide-react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { deleteApiRequest, getApiRequest, patchApiRequest, postApiRequest } from "../lib/api";
 import { allStatusValues, countBucket, matchesStatusFilter, parseAmount, recordStatus, recordsToCsv, statusDefinitions, statusFilterValues, sumRequestedPlanValue } from "../lib/adminData";
@@ -76,32 +77,6 @@ function StatusBreakdown({ title, records, type, onStatusClick }) {
   </section>;
 }
 
-function OpenCompletedSummary({ contacts, purchases }) {
-  const groups = [
-    { title: "Contact enquiries", records: contacts, type: "contact" },
-    { title: "Purchase requests", records: purchases, type: "purchase" },
-  ];
-  return <section className="tax-admin-visual-card tax-admin-open-summary" aria-label="Open and completed request summary">
-    <header><div><span className="tax-admin-eyebrow">WORK QUEUE</span><h3>Open versus completed</h3></div><span>Open includes in-progress work; cancelled requests are separate.</span></header>
-    {groups.map(({ title, records, type }) => {
-      const values = [
-        { label: "Open", count: countBucket(records, type, "open"), style: "open" },
-        { label: "Completed", count: countBucket(records, type, "completed"), style: "completed" },
-        { label: "Cancelled", count: countBucket(records, type, "cancelled"), style: "cancelled" },
-        { label: "Other", count: countBucket(records, type, "other"), style: "other" },
-      ];
-      return <div className="tax-admin-open-group" key={title}>
-        <h4>{title}</h4>
-        <div className="tax-admin-open-bars" role="group" aria-label={`${title}: ${values.map(({ label, count }) => `${label} ${count}`).join(", ")}`}>
-          {values.filter(({ count }) => count > 0).length
-            ? values.filter(({ count }) => count > 0).map(({ label, count, style }) => <div className="tax-admin-open-bar" key={label}><span>{label}</span><strong>{count}</strong><i className={`queue-dot bar-${style}`} aria-hidden="true" /></div>)
-            : <span className="tax-admin-queue-empty">No requests yet</span>}
-        </div>
-      </div>;
-    })}
-  </section>;
-}
-
 function RecentSubmissions({ contacts, purchases }) {
   const recent = [
     ...contacts.map((record) => ({ ...record, kind: "contact", summary: record.service || "Service not specified" })),
@@ -131,9 +106,13 @@ function LastUpdated({ value, loading }) {
   return <time className="tax-admin-last-updated" dateTime={new Date(value).toISOString()} title={new Date(value).toLocaleString()}>{label}</time>;
 }
 
-function RecordCard({ record, type, onStatusChange, onSaveNote, onDelete, busyNoteId, busyRequestId }) {
+function RecordCard({ record, type, onStatusChange, onSaveNote, onDelete, busyNoteId, busyRequestId, operationFeedback }) {
   const isPurchase = type === "purchase";
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState(null);
+  const reduceMotion = useReducedMotion();
+  const disclosureTransition = reduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: [0.22, 1, 0.36, 1] };
   const persistedNote = record.admin_note || "";
   const note = noteDraft?.source === persistedNote ? noteDraft.value : persistedNote;
   const currentStatus = record.status || (isPurchase ? "pending" : "new");
@@ -161,22 +140,27 @@ function RecordCard({ record, type, onStatusChange, onSaveNote, onDelete, busyNo
       <div><span>Submitted</span><strong>{formatDate(record.created_at)}</strong></div>
     </div>
     <div className="tax-admin-record-actions" aria-label="Request actions">
-      {canAccept && <button type="button" className="tax-admin-button tax-admin-button-primary" onClick={() => onStatusChange(record, type, "accepted")} disabled={requestBusy}>{requestBusy ? "Saving status…" : "Accept request"}</button>}
-      {canStart && <button type="button" className="tax-admin-button tax-admin-button-primary" onClick={() => onStatusChange(record, type, "in_progress")} disabled={requestBusy}>{requestBusy ? "Saving status…" : "Start work"}</button>}
-      {canComplete && <button type="button" className="tax-admin-button tax-admin-button-primary" onClick={() => onStatusChange(record, type, "completed")} disabled={requestBusy}>{requestBusy ? "Saving status…" : "Mark completed"}</button>}
-      {canCancel && <button type="button" className="tax-admin-button tax-admin-button-muted" onClick={() => onStatusChange(record, type, "cancelled")} disabled={requestBusy}>{requestBusy ? "Saving status…" : "Cancel request"}</button>}
-      <details className="tax-admin-details"><summary>View details</summary><div className="tax-admin-detail-body">{details.map(([label, value]) => <div key={label}><span>{label}</span><p>{value}</p></div>)}</div></details>
-      <details className="tax-admin-note-details"><summary><FileText size={15} />{record.admin_note ? "View note" : "Add note"}</summary>
-        <div className="tax-admin-note-editor"><label htmlFor={`note-${type}-${record.id}`}>Internal note</label><textarea id={`note-${type}-${record.id}`} rows="3" maxLength="2000" value={note} onChange={(event) => setNoteDraft({ source: persistedNote, value: event.target.value })} placeholder="Private follow-up note" />
+      {canAccept && <button type="button" className="tax-admin-button tax-admin-button-primary" aria-busy={requestBusy} onClick={() => onStatusChange(record, type, "accepted")} disabled={requestBusy}>{requestBusy ? <><LoaderCircle className="tax-admin-action-spinner" size={14} aria-hidden="true" />Saving status…</> : "Accept request"}</button>}
+      {canStart && <button type="button" className="tax-admin-button tax-admin-button-primary" aria-busy={requestBusy} onClick={() => onStatusChange(record, type, "in_progress")} disabled={requestBusy}>{requestBusy ? <><LoaderCircle className="tax-admin-action-spinner" size={14} aria-hidden="true" />Saving status…</> : "Start work"}</button>}
+      {canComplete && <button type="button" className="tax-admin-button tax-admin-button-primary" aria-busy={requestBusy} onClick={() => onStatusChange(record, type, "completed")} disabled={requestBusy}>{requestBusy ? <><LoaderCircle className="tax-admin-action-spinner" size={14} aria-hidden="true" />Saving status…</> : "Mark completed"}</button>}
+      {canCancel && <button type="button" className="tax-admin-button tax-admin-button-muted tax-admin-button-ghost" aria-busy={requestBusy} onClick={() => onStatusChange(record, type, "cancelled")} disabled={requestBusy}>{requestBusy ? <><LoaderCircle className="tax-admin-action-spinner" size={14} aria-hidden="true" />Saving status…</> : "Cancel request"}</button>}
+      <div className="tax-admin-details">
+        <button type="button" className="tax-admin-disclosure-trigger" aria-expanded={detailsOpen} aria-controls={`details-${type}-${record.id}`} onClick={() => setDetailsOpen((open) => !open)}>View details</button>
+        <AnimatePresence initial={false}>{detailsOpen && <motion.div id={`details-${type}-${record.id}`} key="details" className="tax-admin-details-content" initial={{ height: 0, opacity: 0, y: -4 }} animate={{ height: "auto", opacity: 1, y: 0 }} exit={{ height: 0, opacity: 0, y: -4 }} transition={disclosureTransition} style={{ overflow: "hidden" }}><div className="tax-admin-detail-body">{details.map(([label, value]) => <div key={label}><span>{label}</span><p>{value}</p></div>)}</div></motion.div>}</AnimatePresence>
+      </div>
+      <div className="tax-admin-note-details">
+        <button type="button" className="tax-admin-disclosure-trigger" aria-expanded={noteOpen} aria-controls={`note-content-${type}-${record.id}`} onClick={() => setNoteOpen((open) => !open)}><FileText size={15} />{record.admin_note ? "View note" : "Add note"}</button>
+        <AnimatePresence initial={false}>{noteOpen && <motion.div id={`note-content-${type}-${record.id}`} key="note" className="tax-admin-note-content" initial={{ height: 0, opacity: 0, y: -4 }} animate={{ height: "auto", opacity: 1, y: 0 }} exit={{ height: 0, opacity: 0, y: -4 }} transition={disclosureTransition} style={{ overflow: "hidden" }}><div className="tax-admin-note-editor"><label htmlFor={`note-${type}-${record.id}`}>Internal note</label><textarea id={`note-${type}-${record.id}`} rows="3" maxLength="2000" value={note} onChange={(event) => setNoteDraft({ source: persistedNote, value: event.target.value })} placeholder="Private follow-up note" />
           <button type="button" className="tax-admin-button tax-admin-button-primary" onClick={() => onSaveNote(record, type, note)} disabled={noteBusy}>{noteBusy ? "Saving…" : "Save note"}</button>
-        </div>
-      </details>
+        </div></motion.div>}</AnimatePresence>
+      </div>
       <button type="button" className="tax-admin-icon-button tax-admin-delete" aria-label={requestBusy ? "Deleting record" : `Permanently delete ${isPurchase ? "purchase request" : "contact enquiry"}`} title={requestBusy ? "Deleting record" : "Permanently delete"} disabled={requestBusy} onClick={() => onDelete(record, type)}><Trash2 size={16} /></button>
     </div>
+    {operationFeedback && <p className={`tax-admin-action-feedback ${operationFeedback.type}`} role={operationFeedback.type === "error" ? "alert" : "status"}>{operationFeedback.message}</p>}
   </article>;
 }
 
-function RecordsPanel({ title, records, type, active, onStatusChange, onSaveNote, onDelete, busyNoteId, busyRequestId }) {
+function RecordsPanel({ title, records, type, active, onStatusChange, onSaveNote, onDelete, busyNoteId, busyRequestId, operationFeedback }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -253,7 +237,7 @@ function RecordsPanel({ title, records, type, active, onStatusChange, onSaveNote
       <label className="tax-admin-field"><span>Status</span><select value={status} onChange={(event) => updateStatus(event.target.value)}><option value="all">All statuses</option><option value="open">Open</option><option value="other">Other</option>{statuses.map((item) => <option key={item} value={item}>{statusLabel(item)}</option>)}</select></label>
       <label className="tax-admin-field tax-admin-sort"><span><ArrowDownUp size={14} />Sort</span><select value={sort} onChange={(event) => updateSort(event.target.value)}><option value="newest">Newest first</option><option value="oldest">Oldest first</option>{type === "purchase" && <><option value="amount-low">Amount: low to high</option><option value="amount-high">Amount: high to low</option></>}</select></label>
     </div>
-    {pageRecords.length ? <div className="tax-admin-record-list">{pageRecords.map((record) => <RecordCard key={record.id} record={record} type={type} onStatusChange={onStatusChange} onSaveNote={onSaveNote} onDelete={onDelete} busyNoteId={busyNoteId} busyRequestId={busyRequestId} />)}</div>
+    {pageRecords.length ? <div className="tax-admin-record-list">{pageRecords.map((record) => <RecordCard key={record.id} record={record} type={type} onStatusChange={onStatusChange} onSaveNote={onSaveNote} onDelete={onDelete} busyNoteId={busyNoteId} busyRequestId={busyRequestId} operationFeedback={operationFeedback[`${type}-${record.id}`]} />)}</div>
       : <div className="tax-admin-empty"><span><Search size={19} /></span><h3>{selectedRecordMissing ? "This request is no longer available" : records.length ? "No matching requests" : `No ${type === "purchase" ? "purchase requests" : "contact enquiries"} yet`}</h3><p>{selectedRecordMissing ? "It may have been deleted. You can return to the full request list." : records.length ? "Try adjusting the search or status filter." : "New submissions will appear here."}</p>{selectedRecordMissing && <button className="tax-admin-button tax-admin-button-muted" type="button" onClick={() => { setQuery(""); navigate(location.pathname, { replace: true }); }}>Show all requests</button>}</div>}
     <footer className="tax-admin-pagination"><span>Showing {start}–{end} of {filtered.length}</span><div><button type="button" className="tax-admin-icon-button" aria-label="Previous page" disabled={safePage <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}><ChevronLeft size={17} /></button><span>Page {safePage} of {pageCount}</span><button type="button" className="tax-admin-icon-button" aria-label="Next page" disabled={safePage >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}><ChevronRight size={17} /></button></div></footer>
   </section>;
@@ -269,6 +253,7 @@ function AdminDashboard({ onLogout }) {
   const [confirmation, setConfirmation] = useState(null);
   const actionInProgress = useRef(false);
   const [busyNoteId, setBusyNoteId] = useState(null);
+  const [operationFeedback, setOperationFeedback] = useState({});
   const { showToast } = useToast();
   const currentPath = location.pathname.replace(/\/+$/, "");
   const view = currentPath.endsWith("/enquiries") ? "contacts" : currentPath.endsWith("/purchases") ? "purchases" : "dashboard";
@@ -308,6 +293,7 @@ function AdminDashboard({ onLogout }) {
   };
 
   const confirmStatusChange = (record, type, status) => {
+    setOperationFeedback((current) => ({ ...current, [`${type}-${record.id}`]: null }));
     const action = { accepted: "Accept request", in_progress: "Start work", completed: "Mark completed", cancelled: "Cancel request" }[status];
     const noun = type === "contact" ? "enquiry" : "purchase request";
     setConfirmation({ kind: "status", record, type, status, title: status === "cancelled" ? "Cancel this request?" : `${action}?`, message: status === "cancelled" ? `The ${noun} will be retained with Cancelled status.` : `Save this ${noun} as ${statusLabel(status)}?`, confirmLabel: action, busyLabel: "Saving status…", danger: status === "cancelled" });
@@ -341,10 +327,14 @@ function AdminDashboard({ onLogout }) {
         if (!result.record) throw new Error("The updated request was not returned by the server.");
         replaceRecord(action.type, result.record);
         setLastUpdated(Date.now());
+        setOperationFeedback((current) => ({ ...current, [`${action.type}-${action.record.id}`]: { type: "success", message: `Status updated to ${statusLabel(result.record.status)}.` } }));
         showToast("Request status updated", "success");
       }
       setConfirmation(null);
     } catch (requestError) {
+      if (action.kind === "status") {
+        setOperationFeedback((current) => ({ ...current, [`${action.type}-${action.record.id}`]: { type: "error", message: requestError.message || "Status update failed. Please try again." } }));
+      }
       showToast(requestError.message || "Something went wrong. Please try again.", "error");
       setConfirmation({ ...action, busy: false });
     } finally {
@@ -381,16 +371,14 @@ function AdminDashboard({ onLogout }) {
       {loading && <div className="tax-admin-state" role="status">Loading enquiries and purchase requests...</div>}
       {error && <div className="tax-admin-error" role="alert"><AlertCircle size={19} /><div><strong>{data ? "Some data may be out of date" : "We couldn't load the dashboard"}</strong><p>{error}</p><button type="button" className="tax-admin-button tax-admin-button-muted" onClick={() => loadAdminData(true)}>Try again</button></div></div>}
       {data && view === "dashboard" && <>
-        <div className="tax-admin-welcome"><div><span className="tax-admin-eyebrow">OVERVIEW</span><h2>Your request activity</h2><p>Open includes new or pending, contacted, accepted, and in-progress requests. Completed includes legacy resolved enquiries. Completed purchase requests are not confirmed payments.</p></div></div>
+        <div className="tax-admin-welcome"><div><span className="tax-admin-eyebrow">OVERVIEW</span><h2>Your request activity</h2></div></div>
         <div className="tax-admin-metric-groups"><MetricGroup title="Contact enquiries" records={contacts} kind="contact" onMetricClick={openMetric} /><MetricGroup title="Purchase requests" records={purchases} kind="purchase" onMetricClick={openMetric} /></div>
-        <p className="tax-admin-metric-note">Open, completed, cancelled, and other are mutually exclusive groups; their totals reconcile with the request count.</p>
-        <OpenCompletedSummary contacts={contacts} purchases={purchases} />
         <div className="tax-admin-visual-grid"><StatusBreakdown title="Contact enquiries" records={contacts} type="contact" onStatusClick={openMetric} /><StatusBreakdown title="Purchase requests" records={purchases} type="purchase" onStatusClick={openMetric} /></div>
         <RecentSubmissions contacts={contacts} purchases={purchases} />
       </>}
       {data && <div className="tax-admin-route-panels" aria-hidden={view === "dashboard"}>
-        <div hidden={view !== "contacts"}><RecordsPanel title="Contact enquiries" records={contacts} type="contact" active={view === "contacts"} onStatusChange={confirmStatusChange} onSaveNote={saveNote} onDelete={confirmDelete} busyNoteId={busyNoteId} busyRequestId={confirmation?.busy ? `${confirmation.type}-${confirmation.record?.id}` : null} /></div>
-        <div hidden={view !== "purchases"}><RecordsPanel title="Purchase requests" records={purchases} type="purchase" active={view === "purchases"} onStatusChange={confirmStatusChange} onSaveNote={saveNote} onDelete={confirmDelete} busyNoteId={busyNoteId} busyRequestId={confirmation?.busy ? `${confirmation.type}-${confirmation.record?.id}` : null} /></div>
+        <div hidden={view !== "contacts"}><RecordsPanel title="Contact enquiries" records={contacts} type="contact" active={view === "contacts"} onStatusChange={confirmStatusChange} onSaveNote={saveNote} onDelete={confirmDelete} busyNoteId={busyNoteId} busyRequestId={confirmation?.busy ? `${confirmation.type}-${confirmation.record?.id}` : null} operationFeedback={operationFeedback} /></div>
+        <div hidden={view !== "purchases"}><RecordsPanel title="Purchase requests" records={purchases} type="purchase" active={view === "purchases"} onStatusChange={confirmStatusChange} onSaveNote={saveNote} onDelete={confirmDelete} busyNoteId={busyNoteId} busyRequestId={confirmation?.busy ? `${confirmation.type}-${confirmation.record?.id}` : null} operationFeedback={operationFeedback} /></div>
       </div>}
     </main>
     <ConfirmDialog open={Boolean(confirmation)} title={confirmation?.title} message={confirmation?.message} confirmLabel={confirmation?.confirmLabel} busyLabel={confirmation?.busyLabel} danger={confirmation?.danger} busy={confirmation?.busy} onCancel={() => setConfirmation(null)} onConfirm={executeConfirmation} />
