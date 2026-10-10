@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import "./ConfirmDialog.css";
 
-export default function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", cancelLabel = "Cancel", busy = false, onConfirm, onCancel, danger = false }) {
+export default function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", busyLabel = "Please wait...", cancelLabel = "Cancel", busy = false, onConfirm, onCancel, danger = false }) {
   const reduceMotion = useReducedMotion();
   const cancelRef = useRef(null);
   const previousFocus = useRef(null);
@@ -60,7 +60,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "Co
         <p id="confirm-message">{message}</p>
         <div className="confirm-actions">
           <button ref={cancelRef} type="button" className="confirm-cancel" onClick={onCancel} disabled={busy}>{cancelLabel}</button>
-          <button type="button" className={`confirm-accept${danger ? " confirm-accept-danger" : ""}`} onClick={onConfirm} disabled={busy}>{busy ? "Please wait..." : confirmLabel}</button>
+          <button type="button" className={`confirm-accept${danger ? " confirm-accept-danger" : ""}`} onClick={onConfirm} disabled={busy}>{busy ? busyLabel : confirmLabel}</button>
         </div>
       </motion.section>
     </motion.div>}

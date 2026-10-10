@@ -1,6 +1,8 @@
 import cors from "cors";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import express from "express";
+import { canTransitionAdminStatus, isValidAdminStatus } from "./adminWorkflow.js";
+import { normalizePhone } from "../shared/phone.js";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -79,30 +81,6 @@ function readText(body, field, maxLength) {
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-const phoneProfiles = [
-  { code: "971", min: 9, max: 9, pattern: /^[2-9]\d{8}$/ },
-  { code: "91", min: 10, max: 10, pattern: /^[6-9]\d{9}$/ },
-  { code: "44", min: 9, max: 10, pattern: /^[1-9]\d{8,9}$/ },
-  { code: "61", min: 9, max: 9, pattern: /^[2-9]\d{8}$/ },
-  { code: "65", min: 8, max: 8, pattern: /^[3689]\d{7}$/ },
-  { code: "1", min: 10, max: 10, pattern: /^[2-9]\d{9}$/ },
-];
-
-function normalizePhone(value) {
-  const trimmed = value.trim();
-  if (!/^\+[\d\s()-]+$/.test(trimmed)) return null;
-
-  const compact = trimmed.replace(/[\s()-]/g, "");
-  const profile = phoneProfiles.find(({ code }) => compact.startsWith(`+${code}`));
-  if (!profile) return null;
-
-  const nationalNumber = compact.slice(profile.code.length + 1);
-  if (nationalNumber.length < profile.min || nationalNumber.length > profile.max) return null;
-  if (!profile.pattern.test(nationalNumber)) return null;
-
-  return `+${profile.code} ${nationalNumber}`;
 }
 
 function safeCredentialMatch(candidate, expected) {
@@ -281,42 +259,17 @@ app.get("/api/admin/purchases", requireAdmin, (_request, response, next) => {
   }
 });
 
-const adminStatuses = {
-  contacts: new Set(["new", "contacted", "accepted", "in_progress", "completed", "cancelled", "resolved"]),
-  purchases: new Set(["pending", "contacted", "accepted", "in_progress", "completed", "cancelled"]),
-};
-
-const adminStatusTransitions = {
-  contacts: {
-    new: new Set(["accepted", "cancelled"]),
-    contacted: new Set(["accepted", "cancelled"]),
-    accepted: new Set(["in_progress", "cancelled"]),
-    in_progress: new Set(["completed", "cancelled"]),
-    completed: new Set(),
-    resolved: new Set(),
-    cancelled: new Set(),
-  },
-  purchases: {
-    pending: new Set(["accepted", "cancelled"]),
-    contacted: new Set(["accepted", "cancelled"]),
-    accepted: new Set(["in_progress", "cancelled"]),
-    in_progress: new Set(["completed", "cancelled"]),
-    completed: new Set(),
-    cancelled: new Set(),
-  },
-};
-
-function updateAdminRecord(request, response, next, { table, updater, statuses, transitions }) {
+function updateAdminRecord(request, response, next, { table, updater, type }) {
   try {
     const id = Number(request.params.id);
     const status = readText(request.body, "status", 30);
     const adminNote = readText(request.body, "adminNote", 2000);
     if (!Number.isSafeInteger(id) || id < 1) return validationError(response, "Enter a valid record ID.");
-    if (!statuses.has(status)) return validationError(response, "Select a valid status.");
     const currentRecord = database.prepare(`SELECT status FROM ${table} WHERE id = ?`).get(id);
     if (!currentRecord) return response.status(404).json({ success: false, error: "Record not found." });
     const currentStatus = currentRecord.status || (table === "contacts" ? "new" : "pending");
-    if (status !== currentStatus && !transitions[currentStatus]?.has(status)) {
+    if (!isValidAdminStatus(type, status) && status !== currentStatus) return validationError(response, "Select a valid status.");
+    if (!canTransitionAdminStatus(type, currentStatus, status)) {
       return validationError(response, `Cannot change status from ${currentStatus} to ${status}.`);
     }
     const result = updater.run(status, adminNote || null, id);
@@ -341,10 +294,10 @@ function deleteAdminRecord(request, response, next, statement) {
 }
 
 app.patch("/api/admin/contacts/:id", requireAdmin, (request, response, next) =>
-  updateAdminRecord(request, response, next, { table: "contacts", updater: updateContactAdminFields, statuses: adminStatuses.contacts, transitions: adminStatusTransitions.contacts })
+  updateAdminRecord(request, response, next, { table: "contacts", updater: updateContactAdminFields, type: "contacts" })
 );
 app.patch("/api/admin/purchases/:id", requireAdmin, (request, response, next) =>
-  updateAdminRecord(request, response, next, { table: "purchases", updater: updatePurchaseAdminFields, statuses: adminStatuses.purchases, transitions: adminStatusTransitions.purchases })
+  updateAdminRecord(request, response, next, { table: "purchases", updater: updatePurchaseAdminFields, type: "purchases" })
 );
 app.delete("/api/admin/contacts/:id", requireAdmin, (request, response, next) =>
   deleteAdminRecord(request, response, next, deleteContact)
