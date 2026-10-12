@@ -1,4 +1,4 @@
-export const revealViewport = { once: false, amount: 0.18 };
+export const revealViewport = { once: true, amount: 0.18 };
 
 const transition = (delay = 0) => ({
   duration: 0.48,

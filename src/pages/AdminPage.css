@@ -300,6 +300,80 @@
 .tax-admin-profile { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-top: 1px solid var(--admin-border); color: #dddce6; font-size: 12px; }
 .tax-admin-profile-avatar { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid rgba(185,166,255,.22); border-radius: 50%; background: rgba(185,166,255,.1); color: #d9ceff; font-size: 12px; font-weight: 700; }
 
+/* Stage 2 glass treatment and color-coded section labels. */
+.tax-admin-shell {
+  --admin-bg: #090c17;
+  --admin-panel: rgba(22, 25, 42, .72);
+  --admin-border: rgba(198, 202, 232, .13);
+  background: radial-gradient(ellipse at 76% -12%, rgba(119, 94, 191, .19), transparent 43%), linear-gradient(135deg, #090c17, #0d0e19 55%, #11101c);
+}
+.tax-admin-sidebar {
+  border-right-color: rgba(198, 202, 232, .12);
+  background: rgba(13, 16, 29, .82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.tax-admin-topbar {
+  border-bottom-color: rgba(198, 202, 232, .12);
+}
+.tax-admin-metric-group, .tax-admin-visual-card, .tax-admin-panel, .tax-admin-login-card {
+  border-color: rgba(198, 202, 232, .14);
+  background: linear-gradient(145deg, rgba(34, 37, 57, .72), rgba(18, 20, 34, .76));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .2), inset 0 1px rgba(255, 255, 255, .045);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.tax-admin-heading-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: -.01em;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .09);
+}
+.pill-overview {
+  border-color: rgba(185, 166, 255, .24);
+  background: rgba(136, 111, 211, .14);
+  color: #d5caff;
+}
+.pill-enquiries {
+  border-color: rgba(115, 195, 235, .24);
+  background: rgba(65, 145, 190, .13);
+  color: #a9dcf4;
+}
+.pill-purchases {
+  border-color: rgba(242, 151, 156, .24);
+  background: rgba(194, 92, 115, .14);
+  color: #ffc0c2;
+}
+.pill-analytics {
+  border-color: rgba(111, 207, 177, .23);
+  background: rgba(47, 145, 119, .13);
+  color: #a8e6d0;
+}
+.tax-admin-metric-group h2.tax-admin-heading-pill { margin: 0 0 12px; }
+.tax-admin-welcome h2.tax-admin-heading-pill { margin-top: 7px; font-size: 16px; }
+.tax-admin-panel-heading h2.tax-admin-heading-pill { margin-top: 6px; font-size: 16px; }
+.tax-admin-visual-card > header h3.tax-admin-heading-pill { margin-top: 6px; font-size: 13px; }
+.tax-admin-nav-overview.active { border-color: rgba(185, 166, 255, .2); background: rgba(136, 111, 211, .14); color: #d5caff; }
+.tax-admin-nav-enquiries.active { border-color: rgba(115, 195, 235, .2); background: rgba(65, 145, 190, .13); color: #b7e5f8; }
+.tax-admin-nav-purchases.active { border-color: rgba(242, 151, 156, .2); background: rgba(194, 92, 115, .14); color: #ffc0c2; }
+.tax-admin-search, .tax-admin-field { border-color: rgba(198, 202, 232, .15); background: rgba(8, 11, 20, .42); }
+.tax-admin-record { border-color: rgba(198, 202, 232, .11); background: rgba(255, 255, 255, .035); }
+.tax-admin-record:hover { border-color: rgba(185, 166, 255, .24); background: rgba(255, 255, 255, .05); }
+
+@media (max-width: 760px) {
+  .tax-admin-sidebar { background: rgba(13, 16, 29, .94); }
+  .tax-admin-heading-pill { padding: 5px 8px; }
+}
+
 @media (max-width: 1120px) {
   .tax-admin-visual-grid { grid-template-columns: 1fr; }
 }

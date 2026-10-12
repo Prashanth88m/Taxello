@@ -48,8 +48,8 @@ function MetricGroup({ title, records, kind, onMetricClick }) {
   const otherCount = countBucket(records, kind, "other");
   if (otherCount) metrics.push({ label: "Other", value: otherCount, icon: BarChart3, filter: "other" });
   const requestedValue = kind === "purchase" ? sumRequestedPlanValue(records, plans.map((plan) => plan.name)) : null;
-  return <section className="tax-admin-metric-group" aria-label={title}>
-    <h2>{title}</h2>
+  return <section className={`tax-admin-metric-group tax-admin-metric-${kind}`} aria-label={title}>
+    <h2 className={`tax-admin-heading-pill ${kind === "contact" ? "pill-enquiries" : "pill-purchases"}`}>{title}</h2>
     <div className="tax-admin-metrics">{metrics.map(({ label, value, icon: Icon, filter }) => <button className="tax-admin-metric" type="button" key={label} onClick={() => onMetricClick(kind, filter)} aria-label={`Show ${filter === "all" ? "all" : label.toLowerCase()} ${kind === "contact" ? "contact enquiries" : "purchase requests"}`}>
       <span className="tax-admin-metric-icon"><Icon size={16} aria-hidden="true" /></span><span className="tax-admin-metric-label">{label}</span><strong>{value}</strong>
     </button>)}</div>
@@ -69,7 +69,7 @@ function StatusBreakdown({ title, records, type, onStatusClick }) {
   const accessibleSummary = counts.map(({ label, count }) => `${label}: ${count}`).join(", ");
   const nonzeroCounts = counts.filter(({ count }) => count > 0);
   return <section className="tax-admin-visual-card" aria-label={`${title} by status`}>
-    <header><div><span className="tax-admin-eyebrow">STATUS BREAKDOWN</span><h3>{title}</h3></div><strong>{records.length} total</strong></header>
+    <header><div><span className="tax-admin-eyebrow">STATUS BREAKDOWN</span><h3 className="tax-admin-heading-pill pill-analytics">{title}</h3></div><strong>{records.length} total</strong></header>
     <p className="tax-admin-chart-summary">Records by current status: {accessibleSummary}.</p>
     {records.length ? <div className="tax-admin-segmented-bar" role="img" aria-label={accessibleSummary}>{nonzeroCounts.map(({ key, label, count }) => <span key={key} className={`segment-${key}`} style={{ flexGrow: count }} title={`${label}: ${count}`} />)}</div>
       : <p className="tax-admin-chart-empty">No {type === "contact" ? "enquiry" : "purchase request"} data yet.</p>}
@@ -86,7 +86,7 @@ function RecentSubmissions({ contacts, purchases }) {
     .sort((a, b) => b.parsedDate - a.parsedDate)
     .slice(0, 6);
   return <section className="tax-admin-visual-card tax-admin-recent-card">
-    <header><div><span className="tax-admin-eyebrow">LATEST ACTIVITY</span><h3>Recent submissions</h3></div><span>Newest first</span></header>
+    <header><div><span className="tax-admin-eyebrow">LATEST ACTIVITY</span><h3 className="tax-admin-heading-pill pill-overview">Recent submissions</h3></div><span>Newest first</span></header>
     {recent.length ? <ul className="tax-admin-recent-list">{recent.map((record) => <li key={`${record.kind}-${record.id}`}>
       <Link to={`/admin/${record.kind === "contact" ? "enquiries" : "purchases"}?record=${encodeURIComponent(record.id)}`} className="tax-admin-recent-link" aria-label={`Open ${record.kind === "contact" ? "contact enquiry" : "purchase request"} ${record.id}`}><span className={`tax-admin-recent-type type-${record.kind}`}>{record.kind === "contact" ? "Contact" : "Purchase"}</span><div className="tax-admin-recent-info"><strong>{record.name || "Name unavailable"}</strong><span>{record.summary}</span></div><time dateTime={record.parsedDate.toISOString()}>{formatDate(record.created_at)}</time></Link>
     </li>)}</ul> : <p className="tax-admin-chart-empty">No dated submissions are available yet.</p>}
@@ -230,8 +230,8 @@ function RecordsPanel({ title, records, type, active, onStatusChange, onSaveNote
   const hasActiveFilter = query.trim() !== "" || status !== "all";
   const selectedRecordMissing = selectedRecordId && !records.some((record) => Number(record.id) === selectedRecordId);
 
-  return <section className="tax-admin-panel" aria-label={title}>
-    <header className="tax-admin-panel-heading"><div><span className="tax-admin-eyebrow">REQUEST MANAGEMENT</span><h2>{title}</h2></div><span className="tax-admin-count">{filtered.length} {hasActiveFilter ? "matching" : "total requests"}</span></header>
+  return <section className={`tax-admin-panel tax-admin-panel-${type}`} aria-label={title}>
+    <header className="tax-admin-panel-heading"><div><span className="tax-admin-eyebrow">REQUEST MANAGEMENT</span><h2 className={`tax-admin-heading-pill ${type === "contact" ? "pill-enquiries" : "pill-purchases"}`}>{title}</h2></div><span className="tax-admin-count">{filtered.length} {hasActiveFilter ? "matching" : "total requests"}</span></header>
     <div className="tax-admin-controls">
       <label className="tax-admin-search"><Search size={16} aria-hidden="true" /><input value={visibleQuery} onChange={(event) => updateQuery(event.target.value)} placeholder={type === "purchase" ? "Search name, email or plan" : "Search name, email or service"} aria-label={`Search ${title}`} /></label>
       <label className="tax-admin-field"><span>Status</span><select value={status} onChange={(event) => updateStatus(event.target.value)}><option value="all">All statuses</option><option value="open">Open</option><option value="other">Other</option>{statuses.map((item) => <option key={item} value={item}>{statusLabel(item)}</option>)}</select></label>
@@ -360,9 +360,9 @@ function AdminDashboard({ onLogout }) {
       <div className="tax-admin-brand" aria-label="TAXELLO Admin Dashboard"><span className="tax-admin-brand-mark" aria-hidden="true">T</span><span><strong>TAXELLO</strong><small>ADMIN WORKSPACE</small></span></div>
       <span className="tax-admin-nav-label">WORKSPACE</span>
       <nav className="tax-admin-nav">
-        <NavLink to="/admin" end className={({ isActive }) => `tax-admin-nav-item${isActive ? " active" : ""}`}><BarChart3 size={17} />Dashboard</NavLink>
-        <NavLink to="/admin/enquiries" className={({ isActive }) => `tax-admin-nav-item${isActive ? " active" : ""}`}><Mail size={17} />Contact Enquiries</NavLink>
-        <NavLink to="/admin/purchases" className={({ isActive }) => `tax-admin-nav-item${isActive ? " active" : ""}`}><ClipboardList size={17} />Purchase Requests</NavLink>
+        <NavLink to="/admin" end className={({ isActive }) => `tax-admin-nav-item tax-admin-nav-overview${isActive ? " active" : ""}`}><BarChart3 size={17} />Dashboard</NavLink>
+        <NavLink to="/admin/enquiries" className={({ isActive }) => `tax-admin-nav-item tax-admin-nav-enquiries${isActive ? " active" : ""}`}><Mail size={17} />Contact Enquiries</NavLink>
+        <NavLink to="/admin/purchases" className={({ isActive }) => `tax-admin-nav-item tax-admin-nav-purchases${isActive ? " active" : ""}`}><ClipboardList size={17} />Purchase Requests</NavLink>
       </nav>
       <div className="tax-admin-sidebar-bottom"><div className="tax-admin-profile"><span className="tax-admin-profile-avatar" aria-hidden="true">A</span><strong>Administrator</strong></div><a href={window.location.origin} target="_blank" rel="noopener noreferrer" className="tax-admin-nav-item"><ExternalLink size={16} />View Website</a><button type="button" className="tax-admin-nav-item tax-admin-logout" onClick={() => setConfirmation({ kind: "logout", title: "Log out of the workspace?", message: "Your admin session will end on this device.", confirmLabel: "Log out" })}><LogOut size={16} />Logout</button></div>
     </aside>
@@ -371,7 +371,7 @@ function AdminDashboard({ onLogout }) {
       {loading && <div className="tax-admin-state" role="status">Loading enquiries and purchase requests...</div>}
       {error && <div className="tax-admin-error" role="alert"><AlertCircle size={19} /><div><strong>{data ? "Some data may be out of date" : "We couldn't load the dashboard"}</strong><p>{error}</p><button type="button" className="tax-admin-button tax-admin-button-muted" onClick={() => loadAdminData(true)}>Try again</button></div></div>}
       {data && view === "dashboard" && <>
-        <div className="tax-admin-welcome"><div><span className="tax-admin-eyebrow">OVERVIEW</span><h2>Your request activity</h2></div></div>
+        <div className="tax-admin-welcome"><div><span className="tax-admin-eyebrow">OVERVIEW</span><h2 className="tax-admin-heading-pill pill-overview">Your request activity</h2></div></div>
         <div className="tax-admin-metric-groups"><MetricGroup title="Contact enquiries" records={contacts} kind="contact" onMetricClick={openMetric} /><MetricGroup title="Purchase requests" records={purchases} kind="purchase" onMetricClick={openMetric} /></div>
         <div className="tax-admin-visual-grid"><StatusBreakdown title="Contact enquiries" records={contacts} type="contact" onStatusClick={openMetric} /><StatusBreakdown title="Purchase requests" records={purchases} type="purchase" onStatusClick={openMetric} /></div>
         <RecentSubmissions contacts={contacts} purchases={purchases} />
